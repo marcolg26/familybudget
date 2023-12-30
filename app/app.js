@@ -11,6 +11,7 @@ app.use(express.static(`${__dirname}/pages`));
 app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
 
+
 app.get("/test", (req, res) => {
     res.send("Hello World!");
 });
@@ -28,6 +29,7 @@ app.post("/api/auth/signin", async (req, res) => {
     if (user) {
         if (user.password === req.body.password) {
             req.session.user = user;
+            req.session.username = req.body.username;
             res.send("ok");
             //res.redirect('home.html');
         } else {
@@ -45,13 +47,21 @@ function check(req, res, next) {
     }
 }
 
-app.get('/api/budget/', check, (req, res) => {
-    res.json(req.session.user);
+app.get('/api/budget/', check, async (req, res) => {
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+    const budget = await database.collection("expenses").find({ "user": req.session.username }).toArray();
+    res.json(budget);
 
 });
 
-app.get('/api/budget/:year', check, (req, res) => {
-    res.json(req.session.user);
+app.get('/api/budget/:year', check, async (req, res) => {
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+    const budget = await database.collection("expenses").find({ "user": req.session.username, "date": { "$gte": new Date("2023-01-01"), "$lt": new Date("2024-01-01") } }).toArray();
+    res.json(budget);
 
 });
 
@@ -96,7 +106,7 @@ app.get('/api/budget/search?q=query', check, (req, res) => {
 });
 
 app.get('/api/budget/whoami', check, (req, res) => {
-    res.json(req.session.user);
+    res.json(req.session.username);
 
 });
 
