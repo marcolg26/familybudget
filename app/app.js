@@ -39,6 +39,22 @@ app.post("/api/auth/signin", async (req, res) => {
     else res.status(400).send("utente non esistente");
 });
 
+app.post("/api/auth/signup", async (req, res) => {
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    let user = {
+        user: req.body.username,
+        name: req.body.name,
+        surname: req.body.surname,
+        password: req.body.password
+    };
+    await database.collection("users").insertOne(user);
+    res.json(user);
+
+});
+
 function check(req, res, next) {
     if (req.session.user) {
         next();
@@ -105,7 +121,7 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
 
     let trans = {
         //_id: 9999,
-        user: req.session.username, 
+        user: req.session.username,
         category: req.body.category,
         date: new Date(),
         description: req.body.description,
