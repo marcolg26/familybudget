@@ -62,8 +62,10 @@ app.get('/api/budget/:year', check, async (req, res) => {
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
-    const budget = await database.collection("expenses").find({ "user": req.session.username, "date": { "$gte": new Date('2023-01-01'), "$lt": new Date("2024-01-01") } }).toArray();
-    res.json(budget);
+
+    const year = req.params.year;
+    const list = await database.collection("expenses").find({ "user": req.session.username, "date": { "$gte": new Date(`${year}-01-01`), "$lte": new Date(`${year}-12-31`) } }).toArray(); //**
+    res.json(list);
 
 });
 
@@ -77,9 +79,16 @@ app.get('/api/budget/search/:query', check, async (req, res) => { //***
 
 });
 
-app.get('/api/budget/:year/:month', check, (req, res) => {
+app.get('/api/budget/:year/:month', check, async (req, res) => {
     console.log(`/api/budget/:year/:month`);
-    res.json(req.session.user);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const year = req.params.year;
+    const month = req.params.month;
+    const list = await database.collection("expenses").find({ "user": req.session.username, "date": { "$gte": new Date(`${year}-${month}-01`), "$lte": new Date(`${year}-${month}-31`) } }).toArray(); //**
+    res.json(list);
 
 });
 
@@ -89,8 +98,22 @@ app.get('/api/budget/:year/:month/:id', check, (req, res) => {
 
 });
 
-app.post('/api/budget/:year/:month', check, (req, res) => {
-    res.json(req.session.user);
+app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    let trans = {
+        //_id: 9999,
+        user: req.session.username, 
+        category: req.body.category,
+        date: new Date(),
+        description: req.body.description,
+        price: req.body.price,
+        otherUsers: null
+    };
+    await database.collection("expenses").insertOne(trans);
+    res.json(trans);
 
 });
 
@@ -150,7 +173,7 @@ app.get('/api/budget/whoami', check, (req, res) => {
 
 });
 
-app.get('/api/users/search/:query', check, async (req, res) => { //eliminare password
+app.get('/api/users/search/:query', check, async (req, res) => { //eliminare password dai risultati
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
