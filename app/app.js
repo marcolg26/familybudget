@@ -4,7 +4,7 @@ const session = require('express-session');
 const app = express();
 const port = 3002;
 
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
 
 app.use(express.static(`${__dirname}/pages`));
@@ -138,13 +138,13 @@ app.put('/api/budget/:year/:month/:id', check, (req, res) => {
 
 });
 
-app.delete('/api/budget/id', check, async (req, res) => { //aggiungere year e month
-    console.log(`/api/budget/id`);
+app.delete('/api/budget/:id', check, async (req, res) => { //aggiungere year e month
+    console.log(`del /api/budget/id`);
+    console.log(req.params.id);
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
-    const result = await database.collection("expenses").deleteOne({ "_id": req.body.id });
-    res.json(req.session.user);
+    database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
 
 
 });

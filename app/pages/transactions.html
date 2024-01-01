@@ -19,19 +19,22 @@
     <table id="transactions">
       <tr>
         <th>ID</th>
+        <th>Data</th>
         <th>Descrizione</th>
         <th>Categoria</th>
         <th>Prezzo</th>
+        <th>x</th>
       </tr>
       <tr v-for="transaction in transactions">
         <td>{{transaction._id}}</td>
+        <td>{{transaction.date}}</td>
         <td>{{transaction.description}}</td>
         <td>{{transaction.category}}</td>
-        <td>{{transaction.price}}</td>
+        <td>{{transaction.price}}€</td>
+        <td><button @click="del(transaction._id)">Elimina</button></td>
       </tr>
     </table>
   </div>
 
 </body>
-
 </html>
