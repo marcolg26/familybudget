@@ -8,6 +8,9 @@ const { MongoClient, ObjectId } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
 
 app.use(express.static(`${__dirname}/pages`));
+
+app.use(express.json());
+app.use(express.urlencoded());
 app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
 
@@ -70,6 +73,22 @@ app.get('/api/budget/', check, async (req, res) => {
     const database = client.db("familybudget");
     const budget = await database.collection("expenses").find({ "user": req.session.username }).toArray();
     res.json(budget);
+
+});
+
+app.get('/api/users/', check, async (req, res) => { //in più
+    console.log(`/api/users/`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    filter = {};
+    const projection = {
+        'username': 1
+    };
+
+    const users = await database.collection("users").find(filter, { projection }).toArray();
+    res.json(users);
 
 });
 
@@ -147,21 +166,27 @@ app.get('/api/budget/:year/:month/:id', check, (req, res) => {
 });
 
 app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
+    console.log(`post /api/budget/`);
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
 
-    let trans = {
-        //_id: 9999,
+    console.log(req.body.otherUsers);
+
+    const output = {
         user: req.session.username,
         category: req.body.category,
-        date: new Date(),
         description: req.body.description,
-        price: req.body.price,
-        otherUsers: null
+        date: new Date(),
+        price: parseFloat(req.body.price),
+        otherUsers: Object.entries(req.body.otherUsers).map(([user, quote]) => ({
+            user: user,
+            quote: quote
+        }))
     };
-    await database.collection("expenses").insertOne(trans);
-    res.json(trans);
+    
+    await database.collection("expenses").insertOne(output);
+    res.json(output);
 
 });
 
