@@ -59,18 +59,25 @@
             <th>Data</th>
             <th>Descrizione</th>
             <th>Categoria</th>
-            <th>Prezzo</th>
-            <th>x</th>
-            <th>x</th>
+            <th>Quote</th>
+            <th>Prezzo tot.</th>
+            <th></th>
+            <th></th>
           </tr>
           <tr v-for="transaction in transactions">
             <td>{{transaction._id}}</td>
             <td>{{transaction.date}}</td>
             <td>{{transaction.description}}</td>
             <td>{{transaction.category}}</td>
+            <td>
+              <ul>
+                <li v-for="users in transaction.otherUsers">{{users.user}} {{users.quote}}€</li>
+              </ul>
+            </td>
             <td>{{transaction.price}}€</td>
             <td><button @click="" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></button></td>
-            <td><button @click="del(transaction._id)" class="btn btn-danger btn-sm"><i class="bi bi-calendar-x"></i></button>
+            <td><button @click="del(transaction._id)" class="btn btn-danger btn-sm"><i
+                  class="bi bi-calendar-x"></i></button>
             </td>
           </tr>
         </table>

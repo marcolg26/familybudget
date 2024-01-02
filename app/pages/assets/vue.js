@@ -7,7 +7,7 @@ const app = createApp({
     },
     methods: {
         getTransactions: async function () {
-            const response = await fetch("/api/budget");
+            const response = await fetch("/api/budget2");
             this.transactions = await response.json();
         },
         del: async function(id) {

@@ -30,8 +30,8 @@ app.post("/api/auth/signin", async (req, res) => {
         if (user.password === req.body.password) {
             req.session.user = user;
             req.session.username = req.body.username;
-            res.send("ok");
-            //res.redirect('home.html');
+            //res.send("ok");
+            res.redirect('/transactions.html');
         } else {
             res.send("credenziali errate");
         }
@@ -69,6 +69,38 @@ app.get('/api/budget/', check, async (req, res) => {
     await client.connect();
     const database = client.db("familybudget");
     const budget = await database.collection("expenses").find({ "user": req.session.username }).toArray();
+    res.json(budget);
+
+});
+
+app.get('/api/budget2/', check, async (req, res) => {
+    console.log(`/api/budget2/`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const filter = {
+        'user': req.session.username
+    };
+    const projection = {
+        'date': {
+            '$dateToString': {
+                'format': '%d/%m/%Y',
+                'date': '$date'
+            }
+        },
+        'price': 1,
+        'description': 1,
+        '_id': 1,
+        'category': 1,
+        'user': 1,
+        'otherUsers': 1
+    };
+    const sort = {
+        'date': -1
+    };
+
+    const budget = await database.collection("expenses").find(filter, { projection, sort }).toArray();
     res.json(budget);
 
 });
