@@ -207,8 +207,8 @@ app.delete('/api/budget/:id', check, async (req, res) => { //aggiungere year e m
 
 });
 
-app.get('/api/balance', check, async (req, res) => {
-    console.log(`/api/balance`);
+app.get('/api/balance/sum', check, async (req, res) => { //da cancellare
+    console.log(`/api/balance/sum`);
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
@@ -236,32 +236,53 @@ app.get('/api/balance', check, async (req, res) => {
 
 });
 
-app.get('/api/balance2', check, async (req, res) => {
-    console.log(`/api/balance2`);
+app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
+    console.log(`/api/balance`);
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
-    const result = await database.collection("expenses").aggregate([ //si può semplificare?
+
+    const result = await database.collection("expenses").aggregate([ //quanto tutti gli altri utenti devono all'utente loggato
+        {
+            $unwind: "$otherUsers"
+        },
         {
             '$match': {
                 'user': req.session.username
             }
-        }, {
-            '$group': {
-                '_id': null,
-                'total': {
-                    '$sum': '$price'
-                }
-            }
-        }, {
-            '$project': {
-                '_id': 0,
-                'total': 1
+        },
+        {
+            $group: {
+                _id: "$otherUsers.user",
+                totalQuote: { $sum: "$otherUsers.quote" }
             }
         }
     ]).toArray();
 
-    res.json(result); //devo restituire il risultato in json o solo il numero?
+    const result2 = await database.collection("expenses").aggregate([ //quanto id loggato deve a tutti gli altri
+        {
+            $unwind: "$otherUsers"
+        },
+        {
+            '$match': {
+                'otherUsers.user': req.session.username
+            }
+        },
+        {
+            $group: {
+                _id: "$user",
+                totalQuote: { $sum: "$otherUsers.quote" }
+            }
+        }
+    ]).toArray();
+
+    const output = [{
+        "have": result,
+        "give": result2
+    }
+    ]
+
+    res.json(output); //rivedere formato di esportazione
 
 });
 
@@ -271,15 +292,18 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
+
     const result = await database.collection("expenses").aggregate([ //quanto id deve all'utente loggato
         {
             '$unwind': '$otherUsers'
-        }, {
+        },
+        {
             '$match': {
-                'user' : req.session.username,
+                'user': req.session.username,
                 'otherUsers.user': req.params.id
             }
-        }, {
+        },
+        {
             '$group': {
                 '_id': null,
                 'totalQuote': {
@@ -289,12 +313,13 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         }
     ]).toArray();
 
+
     const result2 = await database.collection("expenses").aggregate([ //quanto utente loggato deve a id
         {
             '$unwind': '$otherUsers'
         }, {
             '$match': {
-                'user' : req.params.id,
+                'user': req.params.id,
                 'otherUsers.user': req.session.username
             }
         }, {
@@ -307,10 +332,10 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         }
     ]).toArray();
 
-    console.log(result[0].totalQuote);
-    console.log(result2[0].totalQuote);
+    //console.log(result[0].totalQuote);
+    //console.log(result2[0].totalQuote);
 
-    const output={
+    const output = {
         "have": result[0].totalQuote,
         "give": result2[0].totalQuote
     }
