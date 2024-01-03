@@ -34,10 +34,10 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-md-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="#">Home</a>
+              <a class="nav-link active" aria-current="page" href="/home.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Link</a>
+              <a class="nav-link" href="/transactions.html">Transazioni</a>
             </li>
           </ul>
         </div>
@@ -47,31 +47,33 @@
 
   <main class="flex-shrink-0">
     <div class="container">
-      <h1 class="mt-5">Home</h1>
-      <p class="lead">In questa sezione è presente un riassunto della situazione attuale
-      </p>
+      <div id="app4">
+        <h1 class="mt-5">Home</h1>
+        <p class="lead">In questa sezione è presente un riassunto della situazione attuale
+        </p>
+        <h2>Situazione attuale: {{balance}}€</h2>
 
-      
+      </div>
       <div id="app3">
-       
-              <p>Debiti e crediti</p>
-              <table class="table" id="give">
-                <tr>
-                  <th>#</th>
-                  <th>Utente</th>
-                  <th>Soldi</th>
-                  <th>Rimborsa</th>
-                </tr>
-                <tr v-for="transaction,key in transactions">
-                  <td>{{++key}}</td>
-                  <td>{{transaction.user}}</td>
-                  <td>{{transaction.diff}}€</td>
-                  <td><button @click="del(transaction._id)" class="btn btn-success btn-sm"><i
-                        class="bi bi-credit-card-2-back"></i></button>
-                  </td>
-                </tr>
-              </table>
-           
+
+        <p>Debiti (>0) e crediti (<0)</p>
+            <table class="table" id="give">
+              <tr>
+                <th>#</th>
+                <th>Utente</th>
+                <th>Soldi</th>
+                <th>Rimborsa</th>
+              </tr>
+              <tr v-for="transaction,key in transactions">
+                <td>{{++key}}</td>
+                <td>{{transaction.user}}</td>
+                <td>{{transaction.diff}}€</td>
+                <td><button @click="" v-if="transaction.diff>0" class="btn btn-success btn-sm"><i
+                      class="bi bi-credit-card-2-back"></i></button>
+                </td>
+              </tr>
+            </table>
+
       </div>
     </div>
 

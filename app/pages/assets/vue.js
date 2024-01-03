@@ -85,7 +85,7 @@ const app3 = createApp({
     },
     methods: {
         getTransactions: async function () {
-            const response = await fetch("/api/balance");
+            const response = await fetch("/api/balance2");
             this.transactions = await response.json();
             console.log(this.transactions)
         }
@@ -94,3 +94,23 @@ const app3 = createApp({
         this.getTransactions();
     },
 }).mount("#app3");
+
+const app4 = createApp({
+    data() {
+        return {
+            situation:[],
+            balance: 0,
+        };
+    },
+    methods: {
+        getBalance: async function () {
+            const response = await fetch("/api/balance");
+            this.situation = await response.json();
+            this.balance=this.situation[0].diff.totalQuote;
+            console.log(this.balance)
+        }
+    },
+    mounted() {
+        this.getBalance();
+    },
+}).mount("#app4");

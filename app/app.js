@@ -253,6 +253,60 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         },
         {
             $group: {
+                _id: null,
+                totalQuote: { $sum: "$otherUsers.quote" }
+            }
+        }
+    ]).toArray();
+
+    const result2 = await database.collection("expenses").aggregate([ //quanto id loggato deve a tutti gli altri
+        {
+            $unwind: "$otherUsers"
+        },
+        {
+            '$match': {
+                'otherUsers.user': req.session.username
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalQuote: { $sum: "$otherUsers.quote" }
+            }
+        }
+    ]).toArray();
+
+    const output = [{
+        "have": result,
+        "give": result2,
+        "diff" :{
+            _id: null,
+            totalQuote: parseFloat(result2[0].totalQuote)-parseFloat(result[0].totalQuote)
+        }
+    }
+    ]
+
+    res.json(output);
+
+});
+
+app.get('/api/balance2', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
+    console.log(`/api/balance`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const result = await database.collection("expenses").aggregate([ //quanto tutti gli altri utenti devono all'utente loggato
+        {
+            $unwind: "$otherUsers"
+        },
+        {
+            '$match': {
+                'user': req.session.username
+            }
+        },
+        {
+            $group: {
                 _id: "$otherUsers.user",
                 totalQuote: { $sum: "$otherUsers.quote" }
             }
@@ -293,12 +347,14 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         if (giveUtente) {
             let giveTotal = giveUtente.totalQuote;
 
-            let differenza = haveTotal - giveTotal;
+            let differenza = giveTotal - haveTotal;
             differenze.push({ user: utenteId, diff: differenza });
         }
     });
 
-    res.json(differenze); //rivedere formato di esportazione
+    res.json(differenze); 
+
+    //03/10/2024 17:43 ************* ATTENZIONE: non funziona se non ci sono spese reciproche tra due utenti!!!!!!
 
 });
 
