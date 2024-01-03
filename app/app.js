@@ -276,13 +276,29 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         }
     ]).toArray();
 
+    let differenze = [];
+
     const output = [{
         "have": result,
         "give": result2
     }
     ]
 
-    res.json(output); //rivedere formato di esportazione
+    output[0].have.forEach(haveUtente => {
+        let utenteId = haveUtente._id;
+        let haveTotal = haveUtente.totalQuote;
+
+        let giveUtente = output[0].give.find(giveUtente => giveUtente._id === utenteId);
+
+        if (giveUtente) {
+            let giveTotal = giveUtente.totalQuote;
+
+            let differenza = haveTotal - giveTotal;
+            differenze.push({ user: utenteId, diff: differenza });
+        }
+    });
+
+    res.json(differenze); //rivedere formato di esportazione
 
 });
 
