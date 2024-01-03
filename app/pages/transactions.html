@@ -58,7 +58,7 @@
       <div id="app">
         <table class="table" id="transactions">
           <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Data</th>
             <th>Descrizione</th>
             <th>Categoria</th>
@@ -67,8 +67,8 @@
             <th></th>
             <th></th>
           </tr>
-          <tr v-for="transaction in transactions">
-            <td>{{transaction._id}}</td>
+          <tr v-for="transaction,key in transactions">
+            <td>{{++key}}</td>
             <td>{{transaction.date}}</td>
             <td>{{transaction.description}}</td>
             <td>{{transaction.category}}</td>
@@ -128,8 +128,6 @@
               <input type="hidden" name="otherUsers" v-model="form">
             </div>
           </form>
-          <code>{{form}}</code>
-          
         </div>
         <div class="modal-footer">
           <button @click="post()" class="btn btn-primary">Inserisci</button>

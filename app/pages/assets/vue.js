@@ -17,9 +17,9 @@ const app = createApp({
         },
         del: async function (id) {
             url = "/api/budget/" + id;
-            alert(url);
             const response = fetch(url, { method: 'DELETE' });
             console.log((await response).json());
+            
         },
         modify: async function (id) {
             url = "/api/budget/" + id;

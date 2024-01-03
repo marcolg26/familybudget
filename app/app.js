@@ -11,7 +11,6 @@ app.use(express.static(`${__dirname}/pages`));
 
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
 
 
@@ -82,7 +81,11 @@ app.get('/api/users/', check, async (req, res) => { //in più
     await client.connect();
     const database = client.db("familybudget");
 
-    filter = {};
+    filter = {
+        'username': {
+            '$ne': req.session.username
+        }
+    };
     const projection = {
         'username': 1
     };
@@ -171,8 +174,6 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
     await client.connect();
     const database = client.db("familybudget");
 
-    console.log(req.body.otherUsers);
-
     const output = {
         user: req.session.username,
         category: req.body.category,
@@ -184,7 +185,7 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
             quote: quote
         }))
     };
-    
+
     await database.collection("expenses").insertOne(output);
     res.json(output);
 
@@ -214,7 +215,7 @@ app.get('/api/balance', check, async (req, res) => {
     const result = await database.collection("expenses").aggregate([ //si può semplificare?
         {
             '$match': {
-                'user': 'marcolg'
+                'user': req.session.username
             }
         }, {
             '$group': {
@@ -235,9 +236,87 @@ app.get('/api/balance', check, async (req, res) => {
 
 });
 
-app.get('/api/balance/:id', check, (req, res) => {
+app.get('/api/balance2', check, async (req, res) => {
+    console.log(`/api/balance2`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+    const result = await database.collection("expenses").aggregate([ //si può semplificare?
+        {
+            '$match': {
+                'user': req.session.username
+            }
+        }, {
+            '$group': {
+                '_id': null,
+                'total': {
+                    '$sum': '$price'
+                }
+            }
+        }, {
+            '$project': {
+                '_id': 0,
+                'total': 1
+            }
+        }
+    ]).toArray();
+
+    res.json(result); //devo restituire il risultato in json o solo il numero?
+
+});
+
+app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente loggato e utente con id id.
     console.log(`/api/balance/:id`);
-    res.json(req.session.user);
+
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+    const result = await database.collection("expenses").aggregate([ //quanto id deve all'utente loggato
+        {
+            '$unwind': '$otherUsers'
+        }, {
+            '$match': {
+                'user' : req.session.username,
+                'otherUsers.user': req.params.id
+            }
+        }, {
+            '$group': {
+                '_id': null,
+                'totalQuote': {
+                    '$sum': '$otherUsers.quote'
+                }
+            }
+        }
+    ]).toArray();
+
+    const result2 = await database.collection("expenses").aggregate([ //quanto utente loggato deve a id
+        {
+            '$unwind': '$otherUsers'
+        }, {
+            '$match': {
+                'user' : req.params.id,
+                'otherUsers.user': req.session.username
+            }
+        }, {
+            '$group': {
+                '_id': null,
+                'totalQuote': {
+                    '$sum': '$otherUsers.quote'
+                }
+            }
+        }
+    ]).toArray();
+
+    console.log(result[0].totalQuote);
+    console.log(result2[0].totalQuote);
+
+    const output={
+        "have": result[0].totalQuote,
+        "give": result2[0].totalQuote
+    }
+
+    res.json(output); //ok, ma rivedere formato json
+
 
 });
 
