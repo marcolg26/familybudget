@@ -230,9 +230,19 @@ app.get('/api/budget/search/:query', check, async (req, res) => { //***
 
 
 
-app.get('/api/budget/:year/:month/:id', check, (req, res) => {
+app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
     console.log(`/api/budget/:year/:month/:id`);
-    res.json(req.session.user);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const filter = {
+        '_id': new ObjectId(`${req.params.id}`)
+    };
+
+    console.log(req.params.id);
+    const results = await database.collection("expenses").find(filter).toArray();
+    res.json(results);
 
 });
 

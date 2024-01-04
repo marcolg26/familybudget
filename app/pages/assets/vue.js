@@ -29,7 +29,7 @@ const app = createApp({
         },
         del: async function (id) {
             url = "/api/budget/" + id;
-            const response = fetch(url, { method: 'DELETE' });
+            const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions());
             console.log((await response).json());
 
         },
