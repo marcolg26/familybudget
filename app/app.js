@@ -14,10 +14,6 @@ app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
 
 
-app.get("/test", (req, res) => {
-    res.send("Hello World!");
-});
-
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
 });
@@ -33,7 +29,7 @@ app.post("/api/auth/signin", async (req, res) => {
             req.session.user = user;
             req.session.username = req.body.username;
             //res.send("ok");
-            res.redirect('/transactions.html');
+            res.redirect('/home.html');
         } else {
             res.send("credenziali errate");
         }
@@ -75,7 +71,7 @@ app.get('/api/budget/', check, async (req, res) => {
 
 });
 
-app.get('/api/users/', check, async (req, res) => { //in più
+app.get('/api/users/', check, async (req, res) => { //in più (ma necessaria)
     console.log(`/api/users/`);
     const client = new MongoClient(uri);
     await client.connect();
@@ -103,6 +99,38 @@ app.get('/api/budget2/', check, async (req, res) => {
 
     const filter = {
         'user': req.session.username
+    };
+    const projection = {
+        'date': {
+            '$dateToString': {
+                'format': '%d/%m/%Y',
+                'date': '$date'
+            }
+        },
+        'price': 1,
+        'description': 1,
+        '_id': 1,
+        'category': 1,
+        'user': 1,
+        'otherUsers': 1
+    };
+    const sort = {
+        'date': -1
+    };
+
+    const budget = await database.collection("expenses").find(filter, { projection, sort }).toArray();
+    res.json(budget);
+
+});
+
+app.get('/api/budget_in/', check, async (req, res) => {
+    console.log(`/api/budget_in/`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const filter = {
+        'otherUsers.user': req.session.username
     };
     const projection = {
         'date': {
@@ -207,35 +235,6 @@ app.delete('/api/budget/:id', check, async (req, res) => { //aggiungere year e m
 
 });
 
-app.get('/api/balance/sum', check, async (req, res) => { //da cancellare
-    console.log(`/api/balance/sum`);
-    const client = new MongoClient(uri);
-    await client.connect();
-    const database = client.db("familybudget");
-    const result = await database.collection("expenses").aggregate([ //si può semplificare?
-        {
-            '$match': {
-                'user': req.session.username
-            }
-        }, {
-            '$group': {
-                '_id': null,
-                'total': {
-                    '$sum': '$price'
-                }
-            }
-        }, {
-            '$project': {
-                '_id': 0,
-                'total': 1
-            }
-        }
-    ]).toArray();
-
-    res.json(result); //devo restituire il risultato in json o solo il numero?
-
-});
-
 app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
     console.log(`/api/balance`);
     const client = new MongoClient(uri);
@@ -281,7 +280,7 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         "give": result2,
         "diff" :{
             _id: null,
-            totalQuote: parseFloat(result2[0].totalQuote)-parseFloat(result[0].totalQuote)
+            totalQuote: parseFloat(result2[0].totalQuote)+parseFloat(-result[0].totalQuote)
         }
     }
     ]
@@ -290,7 +289,7 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
 
 });
 
-app.get('/api/balance2', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
+app.get('/api/balance_detail', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
     console.log(`/api/balance`);
     const client = new MongoClient(uri);
     await client.connect();
@@ -404,12 +403,10 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         }
     ]).toArray();
 
-    //console.log(result[0].totalQuote);
-    //console.log(result2[0].totalQuote);
-
     const output = {
-        "have": result[0].totalQuote,
-        "give": result2[0].totalQuote
+        "toHave": parseFloat(-result[0].totalQuote),
+        "toGive": parseFloat(result2[0].totalQuote),
+        "balance": parseFloat(result2[0].totalQuote)+parseFloat(-result[0].totalQuote)
     }
 
     res.json(output); //ok, ma rivedere formato json

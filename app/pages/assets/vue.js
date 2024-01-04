@@ -10,8 +10,6 @@ const app = createApp({
         getTransactions: async function () {
             const response = await fetch("/api/budget2");
             this.transactions = await response.json();
-            console.log(typeof this.transactions);
-            console.log(this.transactions);
         },
         getUsers: async function () {
             const response = await fetch("/api/users");
@@ -85,7 +83,7 @@ const app3 = createApp({
     },
     methods: {
         getTransactions: async function () {
-            const response = await fetch("/api/balance2");
+            const response = await fetch("/api/balance_detail");
             this.transactions = await response.json();
             console.log(this.transactions)
         }
@@ -114,3 +112,20 @@ const app4 = createApp({
         this.getBalance();
     },
 }).mount("#app4");
+
+const app5 = createApp({
+    data() {
+        return {
+            transactions:[],
+        };
+    },
+    methods: {
+        getTransactions: async function () {
+            const response = await fetch("api/budget_in");
+            this.transactions = await response.json();
+        }
+    },
+    mounted() {
+        this.getTransactions();
+    },
+}).mount("#app5");
