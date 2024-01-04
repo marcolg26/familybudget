@@ -4,9 +4,18 @@ const app = createApp({
         return {
             transactions: [],
             users: [],
+            form: {
+                id: '',
+                category: '',
+                description: '',
+                price: '',
+                otherUsers: {},
+                otherUsersCheck: {}
+            },
             select: 1,
             year: 0,
             month: 0,
+            nuovo: 1
         };
     },
     methods: {
@@ -27,44 +36,48 @@ const app = createApp({
             const response = await fetch("/api/users");
             this.users = await response.json();
         },
+        getRecord: async function (id) {
+
+            this.nuovo = 0;
+
+            const response = await fetch("/api/budget/2024/12/" + id);
+            record = await response.json();
+
+            this.form.otherUsersCheck = {};
+            this.form.otherUsers = {};
+
+            this.form.id = record[0]._id;
+            this.form.category = record[0].category;
+            this.form.description = record[0].description;
+            this.form.price = record[0].price;
+
+            record[0].otherUsers.forEach(element => {
+                this.form.otherUsers[element.user] = element.quote;
+                this.form.otherUsersCheck[element.user] = 1;
+            });
+
+            console.log(this.form);
+        },
         del: async function (id) {
             url = "/api/budget/" + id;
             const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions());
             console.log((await response).json());
 
         },
-        modify: async function (id) {
-            url = "/api/budget/" + id;
-            alert(url);
-            const response = fetch(url, { method: 'PUT' });
+        put: async function (id) {
+            this.getRecord(id);
+            url = "/api/budget/2024/12/" + id;
+            const requestOptions = {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(this.form)
+            };
+            const response = fetch(url, requestOptions).then(this.getTransactions());
+            this.getTransactions(); //a quanto pare è necessario...
             console.log((await response).json());
         },
         datefilter() {
             this.getTransactions();
-        }
-    },
-    mounted() {
-        this.getTransactions();
-        this.getUsers();
-    },
-}).mount("#app");
-
-const app2 = createApp({
-    data() {
-        return {
-            users: [],
-            form: {
-                category: '',
-                description: '',
-                price: '',
-                otherUsers: {}
-            }
-        };
-    },
-    methods: {
-        getUsers: async function () {
-            const response = await fetch("/api/users");
-            this.users = await response.json();
         },
         toggleUserInExpense(user) { //s
             if (this.form.otherUsers[user] !== undefined) {
@@ -81,14 +94,28 @@ const app2 = createApp({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions);
+            const response = fetch(url, requestOptions).then(this.getTransactions());
             console.log((await response).json());
+        },
+        clean() {
+
+            this.nuovo = 1;
+
+            delete this.form.id;
+
+            this.form.category = "";
+            this.form.description = "";
+            this.form.price = "";
+
+            this.form.otherUsers={};
+            this.form.otherUsersCheck={};
         }
     },
     mounted() {
+        this.getTransactions();
         this.getUsers();
     },
-}).mount("#app2");
+}).mount("#app");
 
 const app3 = createApp({
     data() {

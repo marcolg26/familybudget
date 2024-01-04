@@ -269,8 +269,47 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
 
 });
 
-app.put('/api/budget/:year/:month/:id', check, (req, res) => {
-    res.json(req.session.user);
+app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
+    console.log(`put /api/budget/`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+
+    console.log(req.body.otherUsers);
+
+
+    const filter = {
+        '_id': new ObjectId(`${req.params.id}`)
+    };
+    const projection = {
+        '$set': {
+            'user': req.session.username,
+            'category': req.body.category,
+            'description': req.body.description,
+            'price': parseFloat(req.body.price),
+            'otherUsers': Object.entries(req.body.otherUsers).map(([user, quote]) => ({
+                user: user,
+                quote: quote
+            }))
+        }
+    };
+
+
+    const result = await database.collection("expenses").updateOne(filter, { 
+        '$set': {
+            'user': req.session.username,
+            'category': req.body.category,
+            'description': req.body.description,
+            'price': parseFloat(req.body.price),
+            'otherUsers': Object.entries(req.body.otherUsers).map(([user, quote]) => ({
+                user: user,
+                quote: quote
+            }))
+        }
+     });
+
+    res.json("ok");
 
 });
 

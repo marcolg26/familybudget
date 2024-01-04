@@ -59,7 +59,7 @@
       </p>
       <p>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
-          data-bs-whatever="@mdo">Nuova spesa</button>
+          data-bs-whatever="@mdo" @click="clean()">Nuova spesa</button>
       </p>
       <div class="container">
         <div class="row">
@@ -103,7 +103,7 @@
             <th>Descrizione</th>
             <th>Categoria</th>
             <th>Quote</th>
-            <th>Prezzo tot.</th>
+            <th>Costo</th>
             <th></th>
             <th></th>
           </tr>
@@ -130,7 +130,7 @@
                 </ul>
               </td>
               <td>{{transaction.price}}€</td>
-              <td><button @click="" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></button></td>
+              <td><button @click="getRecord(transaction._id)" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn btn-warning btn-sm"><i class="bi bi-pencil"></button></td>
               <td><button @click="del(transaction._id)" class="btn btn-danger btn-sm"><i
                     class="bi bi-calendar-x"></i></button>
               </td>
@@ -138,6 +138,49 @@
           </tbody>
         </table>
       </div>
+
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Nuova spesa</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="myForm1">
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Descrizione:</label>
+                  <input type="text" v-model="form.description" class="form-control" name="description" id="description">
+                </div>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Categoria:</label>
+                  <input type="text" v-model="form.category" class="form-control" name="category" id="category">
+                </div>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Costo:</label>
+                  <input type="number" v-model="form.price" class="form-control" step=".01" name="price" id="price">
+                </div>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Utenti:</label>
+                  <div class="input-group mb-3" v-for="user,k in users" :key="k"> <!-- FOR -->
+                    <div class="input-group-text" style="width: 25%;">
+                      <input class="form-check-input mt-0" type="checkbox"
+                        @click="toggleUserInExpense(user.username)" v-model="form.otherUsersCheck[user.username]" :checked="form.otherUsersCheck[user.username]==1">&nbsp;{{user.username}}
+                    </div>
+                    <input type="number" class="form-control" aria-label="" v-model="form.otherUsers[user.username]"
+                      :disabled="form.otherUsers[user.username] === undefined">
+                  </div> <!-- END FOR -->
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-primary" data-bs-dismiss="modal" @click="put(form.id)" v-if="nuovo==0">Modifica</button>
+              <button class="btn btn-primary" data-bs-dismiss="modal" @click="post()" v-if="nuovo==1">Inserisci</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </main>
@@ -149,47 +192,7 @@
   </footer>
 
 
-  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" id="app2">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Nuova spesa</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="myForm1">
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">Descrizione:</label>
-              <input type="text" v-model="form.description" class="form-control" name="description" id="description">
-            </div>
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">Categoria:</label>
-              <input type="text" v-model="form.category" class="form-control" name="category" id="category">
-            </div>
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">Costo:</label>
-              <input type="number" v-model="form.price" class="form-control" step=".01" name="price" id="price">
-            </div>
-            <div class="mb-3">
-              <label for="recipient-name" class="col-form-label">Utenti:</label>
-              <div class="input-group mb-3" v-for="user,k in users" :key="k"> <!-- FOR -->
-                <div class="input-group-text" style="width: 25%;">
-                  <input class="form-check-input mt-0" type="checkbox"
-                    @click="toggleUserInExpense(user.username)">&nbsp;{{user.username}}
-                </div>
-                <input type="number" class="form-control" aria-label="" v-model="form.otherUsers[user.username]"
-                  :disabled="form.otherUsers[user.username] === undefined">
-              </div> <!-- END FOR -->
-              <input type="hidden" name="otherUsers" v-model="form">
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button @click="post()" class="btn btn-primary">Inserisci</button>
-        </div>
-      </div>
-    </div>
-  </div>
+
   <script>
     $(document).ready(function () {
       $("#search1").on("keyup", function () {
