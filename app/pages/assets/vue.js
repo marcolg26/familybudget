@@ -4,11 +4,23 @@ const app = createApp({
         return {
             transactions: [],
             users: [],
+            select: 1,
+            year: 0,
+            month: 0,
         };
     },
     methods: {
         getTransactions: async function () {
-            const response = await fetch("/api/budget2");
+            let url = "/api/budget2";
+            if (this.year == 0) url = "/api/budget2";
+            else if (this.year > 0) {
+                if (this.month == 0)
+                    url = "/api/budget/" + this.year;
+                else url = "/api/budget/" + this.year + "/" + this.month;
+            }
+
+            console.log(url);
+            const response = await fetch(url);
             this.transactions = await response.json();
         },
         getUsers: async function () {
@@ -19,13 +31,16 @@ const app = createApp({
             url = "/api/budget/" + id;
             const response = fetch(url, { method: 'DELETE' });
             console.log((await response).json());
-            
+
         },
         modify: async function (id) {
             url = "/api/budget/" + id;
             alert(url);
             const response = fetch(url, { method: 'PUT' });
             console.log((await response).json());
+        },
+        datefilter() {
+            this.getTransactions();
         }
     },
     mounted() {
@@ -96,7 +111,7 @@ const app3 = createApp({
 const app4 = createApp({
     data() {
         return {
-            situation:[],
+            situation: [],
             balance: 0,
         };
     },
@@ -104,7 +119,7 @@ const app4 = createApp({
         getBalance: async function () {
             const response = await fetch("/api/balance");
             this.situation = await response.json();
-            this.balance=this.situation[0].diff.totalQuote;
+            this.balance = this.situation[0].diff.totalQuote;
             console.log(this.balance)
         }
     },
@@ -116,7 +131,7 @@ const app4 = createApp({
 const app5 = createApp({
     data() {
         return {
-            transactions:[],
+            transactions: [],
         };
     },
     methods: {

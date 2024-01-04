@@ -37,7 +37,10 @@
               <a class="nav-link active" aria-current="page" href="/home.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/transactions.html">Transazioni</a>
+              <a class="nav-link" href="/transactions.html">Spese</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/transactionsIN.html">In entrata</a>
             </li>
           </ul>
         </div>
@@ -51,12 +54,10 @@
         <h1 class="mt-5">Home</h1>
         <p class="lead">In questa sezione è presente un riassunto della situazione attuale
         </p>
-        <h2>Situazione attuale: {{balance}}€</h2>
+        <h2>Situazione attuale: <span :style="{color: balance > 0 ? 'red' : 'green'}">{{balance}}€</span></h2>
 
       </div>
       <div id="app3">
-
-        <p>Debiti (>0) e crediti (<0)</p>
             <table class="table" id="give">
               <tr>
                 <th>#</th>
