@@ -11,8 +11,8 @@ const app = createApp({
     },
     methods: {
         getTransactions: async function () {
-            let url = "/api/budget2";
-            if (this.year == 0) url = "/api/budget2";
+            let url = "/api/budget";
+            if (this.year == 0) url = "/api/budget";
             else if (this.year > 0) {
                 if (this.month == 0)
                     url = "/api/budget/" + this.year;

@@ -61,29 +61,38 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@mdo">Nuova spesa</button>
       </p>
-      <select class="form-select" v-model="month" @change="datefilter">
-        <option selected value="0">-</option>
-        <option value="1">Gennaio</option>
-        <option value="2">Febbraio</option>
-        <option value="3">Marzo</option>
-        <option value="4">Aprile</option>
-        <option value="5">Maggio</option>
-        <option value="6">Giugno</option>
-        <option value="7">Luglio</option>
-        <option value="8">Agosto</option>
-        <option value="9">Settembre</option>
-        <option value="10">Ottobre</option>
-        <option value="11">Novembre</option>
-        <option value="12">Dicembre</option>
-      </select>
-      <select class="form-select" v-model="year" @change="datefilter">
-        <option selected value="0">-</option>
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-      </select>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-2">
+            <select class="form-select" v-model="year" @change="datefilter">
+              <option selected value="0">Anno</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select class="form-select" v-model="month" @change="datefilter">
+              <option selected value="0">Mese</option>
+              <option value="1">Gennaio</option>
+              <option value="2">Febbraio</option>
+              <option value="3">Marzo</option>
+              <option value="4">Aprile</option>
+              <option value="5">Maggio</option>
+              <option value="6">Giugno</option>
+              <option value="7">Luglio</option>
+              <option value="8">Agosto</option>
+              <option value="9">Settembre</option>
+              <option value="10">Ottobre</option>
+              <option value="11">Novembre</option>
+              <option value="12">Dicembre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <br>
       <div class="table-responsive"> <!-- app-->
 
@@ -100,9 +109,10 @@
           </tr>
           <tr>
             <td></td>
-            <td> </td>
-            <td><input class="form-control" id="search1" type="text" placeholder="Cerca.."></td>
-            <td><input class="form-control" id="search2" type="text" placeholder="Cerca.."></td>
+            <td>
+            </td>
+            <td><input class="form-control"  id="search1" type="text" placeholder="Cerca.." style="width:auto;"></td>
+            <td><input class="form-control" id="search2" type="text" placeholder="Cerca.." style="width:auto;"></td>
             <td></td>
             <td></td>
             <td></td>

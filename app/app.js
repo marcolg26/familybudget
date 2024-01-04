@@ -61,16 +61,6 @@ function check(req, res, next) {
     }
 }
 
-app.get('/api/budget/', check, async (req, res) => {
-    console.log(`/api/budget/`);
-    const client = new MongoClient(uri);
-    await client.connect();
-    const database = client.db("familybudget");
-    const budget = await database.collection("expenses").find({ "user": req.session.username }).toArray();
-    res.json(budget);
-
-});
-
 app.get('/api/users/', check, async (req, res) => { //in più (ma necessaria)
     console.log(`/api/users/`);
     const client = new MongoClient(uri);
@@ -91,14 +81,85 @@ app.get('/api/users/', check, async (req, res) => { //in più (ma necessaria)
 
 });
 
-app.get('/api/budget2/', check, async (req, res) => {
-    console.log(`/api/budget2/`);
+app.get('/api/budget/', check, async (req, res) => {
+    console.log(`/api/budget/`);
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
 
     const filter = {
         'user': req.session.username
+    };
+    const projection = {
+        'date': {
+            '$dateToString': {
+                'format': '%d/%m/%Y',
+                'date': '$date'
+            }
+        },
+        'price': 1,
+        'description': 1,
+        '_id': 1,
+        'category': 1,
+        'user': 1,
+        'otherUsers': 1
+    };
+    const sort = {
+        'date': -1
+    };
+
+    const budget = await database.collection("expenses").find(filter, { projection, sort }).toArray();
+    res.json(budget);
+
+});
+
+app.get('/api/budget/:year', check, async (req, res) => {
+    console.log(`/api/budget/:year`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const year = req.params.year;
+
+    const filter = {
+        'user': req.session.username,
+        "date": { "$gte": new Date(`${year}-01-01`), "$lte": new Date(`${year}-12-31`) }
+    };
+    const projection = {
+        'date': {
+            '$dateToString': {
+                'format': '%d/%m/%Y',
+                'date': '$date'
+            }
+        },
+        'price': 1,
+        'description': 1,
+        '_id': 1,
+        'category': 1,
+        'user': 1,
+        'otherUsers': 1
+    };
+    const sort = {
+        'date': -1
+    };
+
+    const budget = await database.collection("expenses").find(filter, { projection, sort }).toArray();
+    res.json(budget);
+
+});
+
+app.get('/api/budget/:year/:month', check, async (req, res) => {
+    console.log(`/api/budget/:year`);
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+
+    const year = req.params.year;
+    const month = req.params.month;
+
+    const filter = {
+        'user': req.session.username,
+        "date": { "$gte": new Date(`${year}-${month}-01`), "$lte": new Date(`${year}-${month}-31`) }
     };
     const projection = {
         'date': {
@@ -155,17 +216,7 @@ app.get('/api/budget_in/', check, async (req, res) => {
 
 });
 
-app.get('/api/budget/:year', check, async (req, res) => {
-    console.log(`/api/budget/:year`);
-    const client = new MongoClient(uri);
-    await client.connect();
-    const database = client.db("familybudget");
 
-    const year = req.params.year;
-    const list = await database.collection("expenses").find({ "user": req.session.username, "date": { "$gte": new Date(`${year}-01-01`), "$lte": new Date(`${year}-12-31`) } }).toArray(); //**
-    res.json(list);
-
-});
 
 app.get('/api/budget/search/:query', check, async (req, res) => { //*** 
     const client = new MongoClient(uri);
@@ -177,18 +228,7 @@ app.get('/api/budget/search/:query', check, async (req, res) => { //***
 
 });
 
-app.get('/api/budget/:year/:month', check, async (req, res) => {
-    console.log(`/api/budget/:year/:month`);
-    const client = new MongoClient(uri);
-    await client.connect();
-    const database = client.db("familybudget");
 
-    const year = req.params.year;
-    const month = req.params.month;
-    const list = await database.collection("expenses").find({ "user": req.session.username, "date": { "$gte": new Date(`${year}-${month}-01`), "$lte": new Date(`${year}-${month}-31`) } }).toArray(); //**
-    res.json(list);
-
-});
 
 app.get('/api/budget/:year/:month/:id', check, (req, res) => {
     console.log(`/api/budget/:year/:month/:id`);
@@ -278,9 +318,9 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
     const output = [{
         "have": result,
         "give": result2,
-        "diff" :{
+        "diff": {
             _id: null,
-            totalQuote: parseFloat(result2[0].totalQuote)+parseFloat(-result[0].totalQuote)
+            totalQuote: parseFloat(result2[0].totalQuote) + parseFloat(-result[0].totalQuote)
         }
     }
     ]
@@ -351,7 +391,7 @@ app.get('/api/balance_detail', check, async (req, res) => { //visualizzazione ri
         }
     });
 
-    res.json(differenze); 
+    res.json(differenze);
 
     //03/10/2024 17:43 ************* ATTENZIONE: non funziona se non ci sono spese reciproche tra due utenti!!!!!!
 
@@ -406,7 +446,7 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
     const output = {
         "toHave": parseFloat(-result[0].totalQuote),
         "toGive": parseFloat(result2[0].totalQuote),
-        "balance": parseFloat(result2[0].totalQuote)+parseFloat(-result[0].totalQuote)
+        "balance": parseFloat(result2[0].totalQuote) + parseFloat(-result[0].totalQuote)
     }
 
     res.json(output); //ok, ma rivedere formato json
