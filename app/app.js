@@ -113,6 +113,17 @@ app.get('/api/budget/', check, async (req, res) => {
 
 });
 
+app.get('/api/budget/whoami', check, async (req, res) => { //eliminare password
+    const client = new MongoClient(uri);
+    await client.connect();
+    const database = client.db("familybudget");
+    console.log(`/api/users/search/:query`);
+    console.log(req.params.query);
+    const results = await database.collection("users").find({ "username": req.session.username }).toArray();
+    res.json(results);
+
+});
+
 app.get('/api/budget/:year', check, async (req, res) => {
     console.log(`/api/budget/:year`);
     const client = new MongoClient(uri);
@@ -503,10 +514,6 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
 
 });
 
-app.get('/api/budget/whoami', check, (req, res) => {
-    res.json(req.session.username);
-
-});
 
 app.get('/api/users/search/:query', check, async (req, res) => { //eliminare password dai risultati
     const client = new MongoClient(uri);
