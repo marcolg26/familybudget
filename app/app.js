@@ -29,7 +29,7 @@ app.post("/api/auth/signin", async (req, res) => {
             req.session.user = user;
             req.session.username = req.body.username;
             //res.send("ok");
-            res.redirect('/home.html');
+            res.redirect('/transactions.html');
         } else {
             res.send("credenziali errate");
         }
@@ -502,6 +502,17 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
             }
         }
     ]).toArray();
+
+    if (result[0]?.totalQuote);
+    else{
+        result[0]=[];
+        result[0].totalQuote=0;}
+
+    if (result2[0]?.totalQuote);
+    else{
+        result2[0]=[];
+        result2[0].totalQuote=0;}
+
 
     const output = {
         "toHave": parseFloat(-result[0].totalQuote),

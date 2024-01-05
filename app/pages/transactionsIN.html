@@ -8,7 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="assets/vue.js" defer></script>
+  <script src="assets/vueBalance.js" defer></script>
 
   <title>Transazioni in entrata</title>
 
@@ -49,12 +49,29 @@
   </header>
 
   <main class="flex-shrink-0">
-    <div class="container">
-      <h1 class="mt-5">Transazioni in entrata</h1>
+    <div class="container" id="app5">
+      <h1 class="mt-5">Bilancio</h1>
+      <h2 class>Situazione con altri utenti</h2>
+      <input class="form-control" id="search1" type="text" placeholder="Utente...">
+      <table class="table" id="give">
+        <tr>
+          <th>#</th>
+          <th>Utente</th>
+          <th>Bilancio</th>
+          <th>Rimborsa</th>
+        </tr>
+        <tr v-for="user,key in users">
+          <td>{{++key}}</td>
+          <td>{{user.username}}</td>
+          <td>{{balance[user.username]}}</td>
+          <td></td>
+        </tr>
+      </table>
+      <h2 class>Transazioni in entrata</h2>
       <p class="lead">In questa sezione sono presenti le ultime spese da altri utenti
       </p>
 
-      <div id="app5">
+      <div>
         <table class="table" id="transactions">
           <tr>
             <th>#</th>
@@ -77,7 +94,7 @@
 
             </td>
             <td>{{transaction.price}}€</td>
-            <td><button @click="" class="btn btn-success btn-sm"><i class="bi bi-pencil"></button></td>
+            <td><button @click="" class="btn btn-success btn-sm"><i class="bi bi-arrow-repeat"></i></button></td>
 
           </tr>
         </table>
