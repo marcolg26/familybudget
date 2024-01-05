@@ -59,7 +59,7 @@ const app5 = createApp({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions);
+            const response = fetch(url, requestOptions).then(this.getTransactionsIN()).then(this.getUsers());
             console.log((await response).json());
         },
     },

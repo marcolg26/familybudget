@@ -7,6 +7,7 @@ const app = createApp({
             user: [],
             form: {
                 id: '',
+                date: '',
                 category: '',
                 description: '',
                 price: '',
@@ -55,6 +56,9 @@ const app = createApp({
             this.form.otherUsers = {};
 
             this.form.id = record[0]._id;
+
+            this.form.date=new Date(record[0].date).toISOString().slice(0,10)
+
             this.form.category = record[0].category;
             this.form.description = record[0].description;
             this.form.price = record[0].price;
@@ -68,7 +72,7 @@ const app = createApp({
         },
         del: async function (id) {
             url = "/api/budget/" + id;
-            const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions());
+            const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions()).then(this.getBalance());
             console.log((await response).json());
 
         },
@@ -80,8 +84,9 @@ const app = createApp({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions).then(this.getTransactions());
+            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance());
             this.getTransactions(); //a quanto pare è necessario...
+            this.getBalance();
             console.log((await response).json());
         },
         datefilter() {
@@ -102,7 +107,7 @@ const app = createApp({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions).then(this.getTransactions());
+            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance());
             console.log((await response).json());
         },
         clean() {

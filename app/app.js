@@ -7,8 +7,6 @@ const port = 3002;
 const { MongoClient, ObjectId } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
 
-app.use(express.static(`${__dirname}/pages`));
-
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
@@ -17,6 +15,12 @@ app.use(session({ secret: 'xx', resave: false })); //!!
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
 });
+
+app.get("/", (req, res) => {
+    res.redirect('/signin.html');
+});
+
+app.use(express.static(`${__dirname}/pages`));
 
 app.post("/api/auth/signin", async (req, res) => {
     const client = new MongoClient(uri);
@@ -227,8 +231,6 @@ app.get('/api/budget_in/', check, async (req, res) => {
 
 });
 
-
-
 app.get('/api/budget/search/:query', check, async (req, res) => { //*** 
     const client = new MongoClient(uri);
     await client.connect();
@@ -238,8 +240,6 @@ app.get('/api/budget/search/:query', check, async (req, res) => { //***
     res.json(results);
 
 });
-
-
 
 app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
     console.log(`/api/budget/:year/:month/:id`);
@@ -267,7 +267,7 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
         user: req.session.username,
         category: req.body.category,
         description: req.body.description,
-        date: new Date(),
+        date: new Date(`${req.body.date}`),
         price: parseFloat(req.body.price),
         otherUsers: Object.entries(req.body.otherUsers).map(([user, quote]) => ({
             user: user,
@@ -275,8 +275,11 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
         }))
     };
 
-    await database.collection("expenses").insertOne(output);
-    res.json(output);
+    console.log(output);
+
+    const result = await database.collection("expenses").insertOne(output);
+    console.log(result);
+    res.json(result);
 
 });
 
@@ -285,10 +288,6 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
-
-
-    console.log(req.body.otherUsers);
-
 
     const filter = {
         '_id': new ObjectId(`${req.params.id}`)
@@ -306,12 +305,12 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
         }
     };
 
-
     const result = await database.collection("expenses").updateOne(filter, { 
         '$set': {
             'user': req.session.username,
             'category': req.body.category,
             'description': req.body.description,
+            'date': new Date(`${req.body.date}`),
             'price': parseFloat(req.body.price),
             'otherUsers': Object.entries(req.body.otherUsers).map(([user, quote]) => ({
                 user: user,
@@ -320,7 +319,7 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
         }
      });
 
-    res.json("ok");
+    res.json(result);
 
 });
 
@@ -386,74 +385,6 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
     ]
 
     res.json(output);
-
-});
-
-app.get('/api/balance_detail', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
-    console.log(`/api/balance`);
-    const client = new MongoClient(uri);
-    await client.connect();
-    const database = client.db("familybudget");
-
-    const result = await database.collection("expenses").aggregate([ //quanto tutti gli altri utenti devono all'utente loggato
-        {
-            $unwind: "$otherUsers"
-        },
-        {
-            '$match': {
-                'user': req.session.username
-            }
-        },
-        {
-            $group: {
-                _id: "$otherUsers.user",
-                totalQuote: { $sum: "$otherUsers.quote" }
-            }
-        }
-    ]).toArray();
-
-    const result2 = await database.collection("expenses").aggregate([ //quanto id loggato deve a tutti gli altri
-        {
-            $unwind: "$otherUsers"
-        },
-        {
-            '$match': {
-                'otherUsers.user': req.session.username
-            }
-        },
-        {
-            $group: {
-                _id: "$user",
-                totalQuote: { $sum: "$otherUsers.quote" }
-            }
-        }
-    ]).toArray();
-
-    let differenze = [];
-
-    const output = [{
-        "have": result,
-        "give": result2
-    }
-    ]
-
-    output[0].have.forEach(haveUtente => {
-        let utenteId = haveUtente._id;
-        let haveTotal = haveUtente.totalQuote;
-
-        let giveUtente = output[0].give.find(giveUtente => giveUtente._id === utenteId);
-
-        if (giveUtente) {
-            let giveTotal = giveUtente.totalQuote;
-
-            let differenza = giveTotal - haveTotal;
-            differenze.push({ user: utenteId, diff: differenza });
-        }
-    });
-
-    res.json(differenze);
-
-    //03/10/2024 17:43 ************* ATTENZIONE: non funziona se non ci sono spese reciproche tra due utenti!!!!!!
 
 });
 

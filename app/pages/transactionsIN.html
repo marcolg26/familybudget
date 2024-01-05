@@ -36,13 +36,10 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-md-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="/home.html">Home</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link" href="/transactions.html">Spese</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="/transactionsIN.html">In entrata</a>
+              <a class="nav-link active" href="/transactionsIN.html">Utenti</a>
             </li>
           </ul>
         </div>
@@ -54,7 +51,7 @@
     <div class="container" id="app5">
       <h1 class="mt-5">Bilancio</h1>
       <h2 class>Situazione con altri utenti</h2>
-      <input class="form-control" id="search1" type="text" placeholder="Utente...">
+
       <table class="table" id="give">
           <tr>
             <th>#</th>
@@ -62,12 +59,18 @@
             <th>Bilancio</th>
             <th>Rimborsa</th>
           </tr>
+          <tr>
+            <td></td>
+            <td><input class="form-control" id="search1" type="text" placeholder="Cerca..."  style="width:auto;"></td>
+            <td></td>
+            <td></td>
+          </tr>
           <tbody id="myTable">
           <tr v-for="user,key in users">
             <td>{{++key}}</td>
             <td>{{user.username}}</td>
             <td :style="{color: balance[user.username] > 0 ? 'red' : 'green'}">{{balance[user.username]}}€</td>
-            <td><button data-bs-toggle="modal" data-bs-target="#exampleModal" @click="apriRimborso(user.username, balance[user.username])" class="btn btn-success btn-sm"><i class="bi bi-arrow-repeat"></i></button></td>
+            <td><button data-bs-toggle="modal" data-bs-target="#exampleModal" @click="apriRimborso(user.username, balance[user.username])" class="btn btn-success btn-sm" v-if="balance[user.username]>0"><i class="bi bi-arrow-repeat"></i></button></td>
           </tr>
         </tbody>
       </table>
@@ -83,7 +86,6 @@
               Effettuare un rimborso di {{price}}€ in favore di {{user}}?
             </div>
             <div class="modal-footer">
-              <code>{{form}}</code>
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
               <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="post()">Rimborsa</button>
             </div>
