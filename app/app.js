@@ -33,7 +33,7 @@ app.post("/api/auth/signin", async (req, res) => {
             req.session.user = user;
             req.session.username = req.body.username;
             //res.send("ok");
-            res.redirect('/transactions.html');
+            res.redirect('/home.html');
         } else {
             res.send("credenziali errate");
         }
