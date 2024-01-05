@@ -10,6 +10,8 @@
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="assets/vueBalance.js" defer></script>
 
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- J QUERY !!!-->
+
   <title>Transazioni in entrata</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -54,19 +56,41 @@
       <h2 class>Situazione con altri utenti</h2>
       <input class="form-control" id="search1" type="text" placeholder="Utente...">
       <table class="table" id="give">
-        <tr>
-          <th>#</th>
-          <th>Utente</th>
-          <th>Bilancio</th>
-          <th>Rimborsa</th>
-        </tr>
-        <tr v-for="user,key in users">
-          <td>{{++key}}</td>
-          <td>{{user.username}}</td>
-          <td>{{balance[user.username]}}</td>
-          <td></td>
-        </tr>
+          <tr>
+            <th>#</th>
+            <th>Utente</th>
+            <th>Bilancio</th>
+            <th>Rimborsa</th>
+          </tr>
+          <tbody id="myTable">
+          <tr v-for="user,key in users">
+            <td>{{++key}}</td>
+            <td>{{user.username}}</td>
+            <td :style="{color: balance[user.username] > 0 ? 'red' : 'green'}">{{balance[user.username]}}€</td>
+            <td><button data-bs-toggle="modal" data-bs-target="#exampleModal" @click="apriRimborso(user.username, balance[user.username])" class="btn btn-success btn-sm"><i class="bi bi-arrow-repeat"></i></button></td>
+          </tr>
+        </tbody>
       </table>
+
+      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Rimborso</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Effettuare un rimborso di {{price}}€ in favore di {{user}}?
+            </div>
+            <div class="modal-footer">
+              <code>{{form}}</code>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="post()">Rimborsa</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <h2 class>Transazioni in entrata</h2>
       <p class="lead">In questa sezione sono presenti le ultime spese da altri utenti
       </p>
@@ -80,7 +104,7 @@
             <th>Descrizione</th>
             <th>Quote</th>
             <th>Totale</th>
-            <th></th>
+            <!--<th></th> -->
           </tr>
           <tr v-for="transaction,key in transactions">
             <td>{{++key}}</td>
@@ -94,7 +118,7 @@
 
             </td>
             <td>{{transaction.price}}€</td>
-            <td><button @click="" class="btn btn-success btn-sm"><i class="bi bi-arrow-repeat"></i></button></td>
+            <!-- <td><button @click="" class="btn btn-success btn-sm"><i class="bi bi-arrow-repeat"></i></button></td> -->
 
           </tr>
         </table>
@@ -108,6 +132,17 @@
       <span class="text-body-secondary">.</span>
     </div>
   </footer>
+
+  <script>
+    $(document).ready(function () {
+      $("#search1").on("keyup", function () {
+        var value = $(this).val().toLowerCase();
+        $("#myTable tr").filter(function () {
+          $(this).toggle($(this).find("td:eq(1)").text().toLowerCase().indexOf(value) > -1)
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>
