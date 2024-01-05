@@ -4,6 +4,7 @@ const app = createApp({
         return {
             transactions: [],
             users: [],
+            user: [],
             form: {
                 id: '',
                 category: '',
@@ -15,7 +16,9 @@ const app = createApp({
             select: 1,
             year: 0,
             month: 0,
-            nuovo: 1
+            nuovo: 1,
+            situation: [],
+            balance: 0,
         };
     },
     methods: {
@@ -35,6 +38,11 @@ const app = createApp({
         getUsers: async function () {
             const response = await fetch("/api/users");
             this.users = await response.json();
+        },
+        getUser: async function () {
+            const response = await fetch("/api/budget/whoami");
+            record = await response.json();
+            this.user = record[0];
         },
         getRecord: async function (id) {
 
@@ -109,10 +117,18 @@ const app = createApp({
 
             this.form.otherUsers={};
             this.form.otherUsersCheck={};
+        },
+        getBalance: async function () {
+            const response = await fetch("/api/balance");
+            this.situation = await response.json();
+            this.balance = this.situation[0].diff.totalQuote;
+            console.log(this.balance)
         }
     },
     mounted() {
+        this.getBalance();
         this.getTransactions();
+        this.getUser();
         this.getUsers();
     },
 }).mount("#app");
