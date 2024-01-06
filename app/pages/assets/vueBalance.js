@@ -56,10 +56,8 @@ const app5 = createApp({
         },
         post: async function () {
 
-            console.log(this.form);
-
             const year = new Date().getFullYear();
-            const month = new Date().getMonth;
+            const month = new Date().getMonth();
             
             url = "/api/budget/"+year+"/"+month+"/";
             const requestOptions = {

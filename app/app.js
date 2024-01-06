@@ -2,7 +2,7 @@ const express = require("express");
 const session = require('express-session');
 
 const app = express();
-const port = 3002;
+const port = 3000;
 
 const { MongoClient, ObjectId } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
@@ -18,6 +18,64 @@ app.listen(port, () => {
 });
 
 app.get("/", (req, res) => {
+    res.redirect('/signin.html');
+});
+
+app.get("/demo", async (req, res) => {
+    await client.connect();
+
+    const database = client.db("familybudget");
+
+    const userDocument = {
+        "username": "pippo",
+        "name": "Pippo",
+        "surname": "",
+        "password": "pippo"
+    };
+
+    database.collection('users').insertOne(userDocument);
+
+    const userDocument2 = {
+        "username": "pluto",
+        "name": "pluto",
+        "surname": "",
+        "password": ""
+    };
+
+    database.collection('users').insertOne(userDocument2);
+
+    const demo = {
+        user: "pippo",
+        category: "Cibo",
+        date: new Date(),
+        description: "Pizza",
+        price: 10.25,
+        otherUsers: [
+            {
+                user: "pluto",
+                quote: 6
+            }
+        ]
+    };
+
+    database.collection('expenses').insertOne(demo);
+
+    const demo2 = {
+        user: "pluto",
+        category: "Svago",
+        date: new Date(),
+        description: "Ciema",
+        price: 20,
+        otherUsers: [
+            {
+                user: "pippo",
+                quote: 10
+            }
+        ]
+    };
+
+    database.collection('expenses').insertOne(demo2);
+
     res.redirect('/signin.html');
 });
 
@@ -41,10 +99,10 @@ app.post("/api/auth/signin", async (req, res) => {
             //res.send("credenziali errate");
         }
     }
-    else{
+    else {
         res.redirect('/signin.html?msg=err');
         //res.status(400).send("utente non esistente");
-    } 
+    }
 });
 
 app.post("/api/auth/signup", async (req, res) => {
@@ -53,13 +111,14 @@ app.post("/api/auth/signup", async (req, res) => {
     const database = client.db("familybudget");
 
     let user = {
-        user: req.body.username,
+        username: req.body.username,
         name: req.body.name,
         surname: req.body.surname,
         password: req.body.password
     };
     await database.collection("users").insertOne(user);
-    res.json(user);
+
+    //res.json(user);
 
     res.redirect('/signin.html');
 
@@ -73,6 +132,13 @@ function check(req, res, next) {
         res.status(403).send("utente non autenticato");
     }
 }
+
+app.get('/api/auth/logout', check, async (req, res) => {
+
+    delete req.session.user;
+    res.redirect('/signin.html');
+
+});
 
 app.get('/api/users/', check, async (req, res) => {
 
@@ -128,10 +194,10 @@ app.get('/api/budget/whoami', check, async (req, res) => {
 
     const filter = {
         'username': req.session.username
-      };
-      const projection = {
+    };
+    const projection = {
         'password': 0
-      };
+    };
 
     const results = await database.collection("users").find(filter, { projection }).toArray();
     res.json(results);
@@ -141,7 +207,7 @@ app.get('/api/budget/whoami', check, async (req, res) => {
 app.get('/api/budget/search/', check, async (req, res) => {
 
     const database = client.db("familybudget");
-    
+
     const results = await database.collection("expenses").find({ "description": { "$regex": req.query.q, "$options": "i" } }).toArray();
     res.json(results);
 
@@ -245,7 +311,7 @@ app.get('/api/budget_in/', check, async (req, res) => {
 });
 
 app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
-    
+
     const database = client.db("familybudget");
 
     const filter = {
@@ -290,8 +356,8 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
     const filter = {
         '_id': new ObjectId(`${req.params.id}`)
     };
-    
-    const result = await database.collection("expenses").updateOne(filter, { 
+
+    const result = await database.collection("expenses").updateOne(filter, {
         '$set': {
             'user': req.session.username,
             'category': req.body.category,
@@ -303,7 +369,7 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
                 quote: quote
             }))
         }
-     });
+    });
 
     res.json(result);
 
@@ -354,6 +420,18 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
             }
         }
     ]).toArray();
+
+    if (result[0]?.totalQuote);
+    else {
+        result[0] = [];
+        result[0].totalQuote = 0;
+    }
+
+    if (result2[0]?.totalQuote);
+    else {
+        result2[0] = [];
+        result2[0].totalQuote = 0;
+    }
 
     const output = [{
         "have": result,
@@ -412,14 +490,16 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
     ]).toArray();
 
     if (result[0]?.totalQuote);
-    else{
-        result[0]=[];
-        result[0].totalQuote=0;}
+    else {
+        result[0] = [];
+        result[0].totalQuote = 0;
+    }
 
     if (result2[0]?.totalQuote);
-    else{
-        result2[0]=[];
-        result2[0].totalQuote=0;}
+    else {
+        result2[0] = [];
+        result2[0].totalQuote = 0;
+    }
 
 
     const output = {
@@ -438,10 +518,10 @@ app.get('/api/users/search/', check, async (req, res) => {
 
     const filter = {
         'username': { "$regex": req.query.q, "$options": "i" }
-      };
-      const projection = {
+    };
+    const projection = {
         'password': 0
-      };
+    };
 
     const results = await database.collection("users").find(filter, { projection }).toArray();
     res.json(results);
