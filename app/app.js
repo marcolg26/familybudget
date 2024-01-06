@@ -5,7 +5,8 @@ const app = express();
 const port = 3000;
 
 const { MongoClient, ObjectId } = require("mongodb");
-const uri = "mongodb://127.0.0.1:27017";
+//const uri = "mongodb://127.0.0.1:27017";
+const uri = "mongodb://mongohost";
 
 const client = new MongoClient(uri);
 
