@@ -7,7 +7,7 @@
 
   <title>Bilancio - familybudget</title>
 
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="assets/vueBalance.js" defer></script>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- jquery-->
@@ -69,7 +69,7 @@
           </tr>
           <tr>
             <td></td>
-            <td><input class="form-control" id="search1" type="text" placeholder="Cerca..."  style="width:auto;"></td>
+            <td><input class="form-control" id="search1" type="text" placeholder="Cerca..." style="width:auto;"></td>
             <td></td>
             <td></td>
           </tr>
@@ -125,7 +125,6 @@
               <ul>
                 <li v-for="users in transaction.otherUsers">{{users.user}} {{users.quote}}€</li>
               </ul>
-
             </td>
             <td>{{transaction.price}}€</td>
           </tr>
@@ -152,5 +151,4 @@
     });
   </script>
 </body>
-
 </html>

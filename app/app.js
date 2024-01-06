@@ -107,6 +107,7 @@ app.post("/api/auth/signin", async (req, res) => {
 });
 
 app.post("/api/auth/signup", async (req, res) => {
+    
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
@@ -126,6 +127,7 @@ app.post("/api/auth/signup", async (req, res) => {
 });
 
 function check(req, res, next) {
+
     if (req.session.user) {
         next();
     } else {
@@ -380,7 +382,16 @@ app.delete('/api/budget/:year/:month/:id', check, async (req, res) => {
 
     const database = client.db("familybudget");
 
-    database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
+    const result = database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
+
+    const deleted = (await result).deletedCount;
+
+    if (deleted === 1) {
+        res.sendStatus(200);
+    }
+    else {
+        res.sendStatus(500);
+    }
 
 });
 

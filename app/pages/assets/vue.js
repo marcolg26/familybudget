@@ -20,7 +20,7 @@ const app = createApp({
             nuovo: 1,
             situation: [],
             balance: 0,
-            debts: 0
+            debts: 0,
         };
     },
     methods: {
@@ -39,7 +39,7 @@ const app = createApp({
         },
         getUsers: async function () {
 
-            this.debts=0; 
+            this.debts = 0;
 
             const response = await fetch("/api/users");
             this.users = await response.json();
@@ -49,7 +49,7 @@ const app = createApp({
                 const response = await fetch("/api/balance/" + user.username);
                 utente = await response.json();
 
-                if(utente.balance>0) this.debts++;
+                if (utente.balance > 0) this.debts++;
             });
         },
         getUser: async function () {
@@ -63,8 +63,8 @@ const app = createApp({
 
             const year = new Date().getFullYear();
             const month = new Date().getMonth();
-            
-            const response = await fetch("/api/budget/"+year+"/"+month+"/"+id);
+
+            const response = await fetch("/api/budget/" + year + "/" + month + "/" + id);
             record = await response.json();
 
             this.form.otherUsersCheck = {};
@@ -89,19 +89,20 @@ const app = createApp({
 
             const year = new Date().getFullYear();
             const month = new Date().getMonth();
-            
-            url = "/api/budget/"+year+"/"+month+"/"+id;
-            const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions()).then(this.getBalance()).then(this.getUsers());
-            console.log((await response).json());
+
+            url = "/api/budget/" + year + "/" + month + "/" + id;
+
+            fetch(url, { method: 'DELETE' }).then((response) => { console.log(response.status) }).then(this.getTransactions()).then(this.getBalance()).then(this.getUsers());
 
         },
         put: async function (id) {
+
             this.getRecord(id);
 
             const year = new Date().getFullYear();
             const month = new Date().getMonth();
-            
-            url = "/api/budget/"+year+"/"+month+"/"+ id;
+
+            url = "/api/budget/" + year + "/" + month + "/" + id;
             const requestOptions = {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -128,8 +129,8 @@ const app = createApp({
             const month = new Date().getMonth();
 
             console.log(month);
-            
-            url = "/api/budget/"+year+"/"+month+"/";
+
+            url = "/api/budget/" + year + "/" + month + "/";
 
             const requestOptions = {
                 method: "POST",

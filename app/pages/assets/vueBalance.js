@@ -44,9 +44,6 @@ const app5 = createApp({
         },
         apriRimborso(user, price) {
 
-            console.log(user);
-            console.log(price);
-
             this.user = user;
             this.price = price;
 
