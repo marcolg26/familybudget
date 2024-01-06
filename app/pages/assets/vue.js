@@ -20,6 +20,7 @@ const app = createApp({
             nuovo: 1,
             situation: [],
             balance: 0,
+            debts: 0
         };
     },
     methods: {
@@ -37,8 +38,19 @@ const app = createApp({
             this.transactions = await response.json();
         },
         getUsers: async function () {
+
+            this.debts=0; 
+
             const response = await fetch("/api/users");
             this.users = await response.json();
+
+            this.users.forEach(async user => {
+
+                const response = await fetch("/api/balance/" + user.username);
+                utente = await response.json();
+
+                if(utente.balance>0) this.debts++;
+            });
         },
         getUser: async function () {
             const response = await fetch("/api/budget/whoami");
@@ -49,7 +61,10 @@ const app = createApp({
 
             this.nuovo = 0;
 
-            const response = await fetch("/api/budget/2024/12/" + id);
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth();
+            
+            const response = await fetch("/api/budget/"+year+"/"+month+"/"+id);
             record = await response.json();
 
             this.form.otherUsersCheck = {};
@@ -57,7 +72,7 @@ const app = createApp({
 
             this.form.id = record[0]._id;
 
-            this.form.date = new Date(record[0].date).toISOString().slice(0, 10)
+            this.form.date = new Date(record[0].date).toISOString().slice(0, 10);
 
             this.form.category = record[0].category;
             this.form.description = record[0].description;
@@ -71,22 +86,31 @@ const app = createApp({
             console.log(this.form);
         },
         del: async function (id) {
-            url = "/api/budget/" + id;
-            const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions()).then(this.getBalance());
+
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth();
+            
+            url = "/api/budget/"+year+"/"+month+"/"+id;
+            const response = fetch(url, { method: 'DELETE' }).then(this.getTransactions()).then(this.getBalance()).then(this.getUsers());
             console.log((await response).json());
 
         },
         put: async function (id) {
             this.getRecord(id);
-            url = "/api/budget/2024/12/" + id;
+
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth();
+            
+            url = "/api/budget/"+year+"/"+month+"/"+ id;
             const requestOptions = {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance());
+            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance()).then(this.getUsers());
             this.getTransactions(); //a quanto pare è necessario...
             this.getBalance();
+            this.getUsers();
             console.log((await response).json());
         },
         datefilter() {
@@ -100,14 +124,19 @@ const app = createApp({
             }
         },
         post: async function () {
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth();
 
-            url = "/api/budget/"
+            console.log(month);
+            
+            url = "/api/budget/"+year+"/"+month+"/";
+
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance());
+            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance()).then(this.getUsers());
             console.log((await response).json());
         },
         clean() {

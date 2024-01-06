@@ -38,12 +38,16 @@
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav me-auto mb-2 mb-md-0">
             <li class="nav-item">
-              <a class="nav-link active" href="/home.html">Spese</a>
+              <a class="nav-link" href="/home.html">Spese</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/balance.html">Utenti</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/api.html">API</a>
+            </li>
           </ul>
+        </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-md-0">
             <li class="nav-item">
               <a class="nav-link active" href="/signin.html"><i class="bi bi-box-arrow-right"></i></a>
@@ -78,38 +82,43 @@
             </tr>
             <tr>
               <td>GET</td>
-              <td>/api/budget/</td>
+              <td><a href="/api/budget/" target="_blank">/api/budget/</a></td>
               <td>Spese dell'utente attuale </td>
             </tr>
             <tr>
               <td>GET</td>
-              <td>/api/budget/:year</td>
-              <td>Spese dell'utente attuale </td>
+              <td><a href="/api/budget_in/" target="_blank">/api/budget_in/</a></td>
+              <td>Spese effettuate da altri utenti che coinvolgono l'utente attuale</td>
             </tr>
             <tr>
               <td>GET</td>
-              <td>/api/budget/:year/:month</td>
-              <td>Spese dell'utente attuale </td>
+              <td><a href="/api/budget/:year" target="_blank">/api/budget/:year</a></td>
+              <td>Spese dell'utente attuale nell'anno <i>year</i> </td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td><a href="/api/budget/:year/:month" target="_blank">/api/budget/:year/:month</a></td>
+              <td>Spese dell'utente attuale nel mese <i>month</i> dell'anno <i>year</i></td>
             </tr>
             <tr>
               <td>GET</td>
               <td>/api/budget/:year/:month/:id</td>
-              <td>Dettaglio della spesa id nel mese month dell'anno year </td>
+              <td>Dettaglio della spesa <i>id</i> nel mese <i>month</i> dell'anno <i>year</i></td>
             </tr>
             <tr>
               <td>POST</td>
               <td>/api/budget/:year/:month</td>
-              <td>Aggiunta di una spesa nel mese month dell'anno year</td>
+              <td>Aggiunta di una spesa nel mese <i>month</i> dell'anno <i>year</i></td>
             </tr>
             <tr>
               <td>PUT</td>
               <td>/api/budget/:year/:month/:id</td>
-              <td>Modifica della spesa id nel mese month dell'anno year</td>
+              <td>Modifica della spesa <i>id</i> nel mese <i>month</i> e anno <i>year</i></td>
             </tr>
             <tr>
               <td>DELETE</td>
               <td>/api/budget/:year/:month/:id</td>
-              <td>Eliminazione della spesa id nel mese month e anno year</td>
+              <td>Eliminazione della spesa <i>id</i> nel mese <i>month</i> e anno <i>year</i></td>
             </tr>
             <tr>
               <td>GET</td>
@@ -119,12 +128,12 @@
             <tr>
               <td>GET</td>
               <td><a href="/api/balance/:id" target="_blank" >/api/balance/:id</a></td>
-              <td>Visualizzazione del bilancio tra l'utente loggato e l'utente con id userID</td>
+              <td>Visualizzazione del bilancio tra l'utente attuale e un utente avente un certo id</td>
             </tr>
             <tr>
               <td>GET</td>
               <td><a href="/api/budget/search?q=query" target="_blank" >/api/budget/search?q=query</a></td>
-              <td>Cerca la spesa che matcha la stringa query</td>
+              <td>Cerca la spesa che corrisponda alla stringa <i>query</i></td>
             </tr>
             <tr>
               <td>GET</td>
@@ -133,8 +142,8 @@
             </tr>
             <tr>
               <td>GET</td>
-              <td>/api/users/search?q=query</td>
-              <td>Cerca l'utente che matcha la stringa query</td>
+              <td><a href="/api/users/search?q=query" target="_blank" >/api/users/search?q=query</a></td>
+              <td>Cerca l'utente che corrisponda alla stringa <i>query</i></td>
             </tr>
           </tbody>
         </table>

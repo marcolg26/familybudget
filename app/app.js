@@ -13,7 +13,6 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
 
-
 app.listen(port, () => {
     console.log(`App in funzione sulla porta ${port}`);
 });
@@ -62,6 +61,8 @@ app.post("/api/auth/signup", async (req, res) => {
     await database.collection("users").insertOne(user);
     res.json(user);
 
+    res.redirect('/signin.html');
+
 });
 
 function check(req, res, next) {
@@ -74,7 +75,7 @@ function check(req, res, next) {
 }
 
 app.get('/api/users/', check, async (req, res) => {
-    console.log(`/api/users/`);
+
     const database = client.db("familybudget");
 
     filter = {
@@ -92,7 +93,6 @@ app.get('/api/users/', check, async (req, res) => {
 });
 
 app.get('/api/budget/', check, async (req, res) => {
-    console.log(`/api/budget/`);
 
     const database = client.db("familybudget");
 
@@ -122,17 +122,33 @@ app.get('/api/budget/', check, async (req, res) => {
 
 });
 
-app.get('/api/budget/whoami', check, async (req, res) => { //eliminare password
+app.get('/api/budget/whoami', check, async (req, res) => {
+
     const database = client.db("familybudget");
-    console.log(`/api/users/search/:query`);
-    console.log(req.params.query);
-    const results = await database.collection("users").find({ "username": req.session.username }).toArray();
+
+    const filter = {
+        'username': req.session.username
+      };
+      const projection = {
+        'password': 0
+      };
+
+    const results = await database.collection("users").find(filter, { projection }).toArray();
+    res.json(results);
+
+});
+
+app.get('/api/budget/search/', check, async (req, res) => {
+
+    const database = client.db("familybudget");
+    
+    const results = await database.collection("expenses").find({ "description": { "$regex": req.query.q, "$options": "i" } }).toArray();
     res.json(results);
 
 });
 
 app.get('/api/budget/:year', check, async (req, res) => {
-    console.log(`/api/budget/:year`);
+
     const database = client.db("familybudget");
 
     const year = req.params.year;
@@ -165,7 +181,7 @@ app.get('/api/budget/:year', check, async (req, res) => {
 });
 
 app.get('/api/budget/:year/:month', check, async (req, res) => {
-    console.log(`/api/budget/:year`);
+
     const database = client.db("familybudget");
 
     const year = req.params.year;
@@ -199,7 +215,7 @@ app.get('/api/budget/:year/:month', check, async (req, res) => {
 });
 
 app.get('/api/budget_in/', check, async (req, res) => {
-    console.log(`/api/budget_in/`);
+
     const database = client.db("familybudget");
 
     const filter = {
@@ -228,18 +244,8 @@ app.get('/api/budget_in/', check, async (req, res) => {
 
 });
 
-app.get('/api/budget/search/:query', check, async (req, res) => { //*** 
-    const client = new MongoClient(uri);
-    await client.connect();
-    const database = client.db("familybudget");
-    console.log(`/api/budget/search/:query`);
-    const results = await database.collection("expenses").find({ "description": { "$regex": req.params.query, "$options": "i" } }).toArray();
-    res.json(results);
-
-});
-
 app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
-    console.log(`/api/budget/:year/:month/:id`);
+    
     const database = client.db("familybudget");
 
     const filter = {
@@ -249,11 +255,12 @@ app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
     console.log(req.params.id);
     const results = await database.collection("expenses").find(filter).toArray();
     res.json(results);
+    console.log(res.statusCode);
 
 });
 
-app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
-    console.log(`post /api/budget/`);
+app.post('/api/budget/:year/:month/', check, async (req, res) => {
+
     const database = client.db("familybudget");
 
     const output = {
@@ -277,7 +284,7 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
 });
 
 app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
-    console.log(`put /api/budget/`);
+
     const database = client.db("familybudget");
 
     const filter = {
@@ -302,18 +309,15 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
 
 });
 
-app.delete('/api/budget/:id', check, async (req, res) => { //aggiungere year e month
-    console.log(`del /api/budget/id`);
-    console.log(req.params.id);
+app.delete('/api/budget/:year/:month/:id', check, async (req, res) => {
+
     const database = client.db("familybudget");
 
     database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
 
-
 });
 
 app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
-    console.log(`/api/balance`);
 
     const database = client.db("familybudget");
 
@@ -366,7 +370,6 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
 });
 
 app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente loggato e utente con id id.
-    console.log(`/api/balance/:id`);
 
     const database = client.db("familybudget");
 
@@ -389,7 +392,6 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
             }
         }
     ]).toArray();
-
 
     const result2 = await database.collection("expenses").aggregate([ //quanto utente loggato deve a id
         {
@@ -428,17 +430,20 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
 
     res.json(output); //ok, ma rivedere formato json
 
-
 });
 
-
-app.get('/api/users/search/:query', check, async (req, res) => { //eliminare password dai risultati
+app.get('/api/users/search/', check, async (req, res) => {
 
     const database = client.db("familybudget");
 
-    console.log(`/api/users/search/:query`);
-    console.log(req.params.query);
-    const results = await database.collection("users").find({ "username": { "$regex": req.params.query, "$options": "i" } }).toArray();
+    const filter = {
+        'username': { "$regex": req.query.q, "$options": "i" }
+      };
+      const projection = {
+        'password': 0
+      };
+
+    const results = await database.collection("users").find(filter, { projection }).toArray();
     res.json(results);
 
 });

@@ -23,7 +23,7 @@ const app5 = createApp({
             const response = await fetch("api/budget_in");
             if (response.status === 403) {
                 console.log("403 non autorizzato");
-                location.assign('signin.html?msg=err');
+                location.assign('signin.html?msg=auth');
             }
             this.transactions = await response.json();
         },
@@ -57,8 +57,11 @@ const app5 = createApp({
         post: async function () {
 
             console.log(this.form);
+
+            const year = new Date().getFullYear();
+            const month = new Date().getMonth;
             
-            url = "/api/budget/"
+            url = "/api/budget/"+year+"/"+month+"/";
             const requestOptions = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

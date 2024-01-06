@@ -43,6 +43,9 @@
             <li class="nav-item">
               <a class="nav-link" href="/balance.html">Utenti</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/api.html">API</a>
+            </li>
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-md-0">
             <li class="nav-item">
@@ -59,11 +62,11 @@
       <h1 class="mt-5">Benvenuto, {{user.name}}</h1>
       <h2>Situazione attuale: <span :style="{color: balance > 0 ? 'red' : 'green'}">{{balance}}€</span></h2>
       <p>
-        <a class="btn btn-secondary" role="button" href="balance.html" >Dettagli bilancio</a> &nbsp;
+        <a class="btn btn-secondary" role="button" href="balance.html" >Rimborsi&nbsp;<span class="badge bg-danger" v-if="debts>0">{{debts}}</span></a> &nbsp;
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
           data-bs-whatever="@mdo" @click="clean()">Nuova spesa</button>
       </p>
-      <h2>Transazioni dell'utente</h2>
+      <h2>Ultime spese</h2>
       <p class="lead">In questa sezione sono presenti tutte le spese effettuate con costo totale e eventuali quote di altri utenti</p>
 
       <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample"
@@ -186,7 +189,6 @@
               </form>
             </div>
             <div class="modal-footer">
-              <code>{{form}}</code>
               <button class="btn btn-primary" data-bs-dismiss="modal" @click="put(form.id)"
                 v-if="nuovo==0">Modifica</button>
               <button class="btn btn-primary" data-bs-dismiss="modal" @click="post()" v-if="nuovo==1">Inserisci</button>
