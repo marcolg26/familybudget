@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en" class="h-100" data-bs-theme="auto">
+
+<head>
+  <script src="/assets/color-modes.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="assets/vue.js" defer></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script> <!-- J QUERY !!!-->
+
+  <title>API - familybudget</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+
+  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script> -->
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+  <link rel="stylesheet" href="/assets/css/bootstrap-custom.css">
+</head>
+
+<body class="d-flex flex-column h-100">
+  <header>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">familybudget</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+          aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav me-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="/home.html">Spese</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/balance.html">Utenti</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="/signin.html"><i class="bi bi-box-arrow-right"></i></a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="flex-shrink-0">
+    <div class="container" id="app">
+      <h1 class="mt-5">API</h1>
+      <p class="lead">Questa applicazione dispone delle seguenti API</p>
+      <div class="table-responsive">
+        <table class="table">
+          <tr>
+            <th>Metodo</th>
+            <th>API</th>
+            <th>Descrizione</th>
+          </tr>
+          <tbody id="myTable">
+            <tr>
+              <td>POST</td>
+              <td>/api/auth/signup</td>
+              <td>Registrazione di un nuovo utente</td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>/api/auth/signin</td>
+              <td>Login di un utente</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>/api/budget/</td>
+              <td>Spese dell'utente attuale </td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>/api/budget/:year</td>
+              <td>Spese dell'utente attuale </td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>/api/budget/:year/:month</td>
+              <td>Spese dell'utente attuale </td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>/api/budget/:year/:month/:id</td>
+              <td>Dettaglio della spesa id nel mese month dell'anno year </td>
+            </tr>
+            <tr>
+              <td>POST</td>
+              <td>/api/budget/:year/:month</td>
+              <td>Aggiunta di una spesa nel mese month dell'anno year</td>
+            </tr>
+            <tr>
+              <td>PUT</td>
+              <td>/api/budget/:year/:month/:id</td>
+              <td>Modifica della spesa id nel mese month dell'anno year</td>
+            </tr>
+            <tr>
+              <td>DELETE</td>
+              <td>/api/budget/:year/:month/:id</td>
+              <td>Eliminazione della spesa id nel mese month e anno year</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td><a href="/api/balance" target="_blank" >/api/balance</a></td>
+              <td>Visualizzazione riassunto dare/avere dell'utente</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td><a href="/api/balance/:id" target="_blank" >/api/balance/:id</a></td>
+              <td>Visualizzazione del bilancio tra l'utente loggato e l'utente con id userID</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td><a href="/api/budget/search?q=query" target="_blank" >/api/budget/search?q=query</a></td>
+              <td>Cerca la spesa che matcha la stringa query</td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td><a href="/api/budget/whoami" target="_blank" >/api/budget/whoami</a></td>
+              <td>Se autenticato, restituisce le informazioni sull'utente </td>
+            </tr>
+            <tr>
+              <td>GET</td>
+              <td>/api/users/search?q=query</td>
+              <td>Cerca l'utente che matcha la stringa query</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer mt-auto py-3 bg-body-tertiary">
+    <div class="container">
+      <span class="text-body-secondary">&copy; 2024 familybudget - Marco Lo Giudice</span>
+    </div>
+  </footer>
+</body>
+
+</html>

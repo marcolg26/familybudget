@@ -46,7 +46,7 @@
           </ul>
           <ul class="navbar-nav ms-auto mb-2 mb-md-0">
             <li class="nav-item">
-              <a class="nav-link active" href="/index.html"><i class="bi bi-box-arrow-right"></i></a>
+              <a class="nav-link active" href="/signin.html"><i class="bi bi-box-arrow-right"></i></a>
             </li>
           </ul>
         </div>
@@ -58,10 +58,13 @@
     <div class="container" id="app">
       <h1 class="mt-5">Benvenuto, {{user.name}}</h1>
       <h2>Situazione attuale: <span :style="{color: balance > 0 ? 'red' : 'green'}">{{balance}}€</span></h2>
-      <p><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
-          data-bs-whatever="@mdo" @click="clean()">Nuova spesa</button></p>
+      <p>
+        <a class="btn btn-secondary" role="button" href="balance.html" >Dettagli bilancio</a> &nbsp;
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+          data-bs-whatever="@mdo" @click="clean()">Nuova spesa</button>
+      </p>
       <h2>Transazioni dell'utente</h2>
-      <p class="lead">In questa sezione sono presenti le ultime spese effettuate</p>
+      <p class="lead">In questa sezione sono presenti tutte le spese effettuate con costo totale e eventuali quote di altri utenti</p>
 
       <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample"
         aria-expanded="false" aria-controls="collapseExample">
@@ -100,8 +103,7 @@
               </div>
               <div class="col-md-3"><input class="form-control" id="search1" type="text" placeholder="Descrizione">
               </div>
-              <div class="col-md-3"> <input class="form-control" id="search2" type="text" placeholder="Categoria"
-                  ></div>
+              <div class="col-md-3"> <input class="form-control" id="search2" type="text" placeholder="Categoria"></div>
             </div>
           </div>
         </div>
@@ -154,8 +156,7 @@
               <form id="myForm1">
                 <div class="mb-3">
                   <label for="recipient-name" class="col-form-label">Data:</label>
-                  <input type="date" v-model="form.date" class="form-control" name="description"
-                    id="description">
+                  <input type="date" v-model="form.date" class="form-control" name="description" id="description">
                 </div>
                 <div class="mb-3">
                   <label for="recipient-name" class="col-form-label">Descrizione:</label>
@@ -200,7 +201,7 @@
 
   <footer class="footer mt-auto py-3 bg-body-tertiary">
     <div class="container">
-      <span class="text-body-secondary">.</span>
+      <span class="text-body-secondary">&copy; 2024 familybudget - Marco Lo Giudice</span>
     </div>
   </footer>
 

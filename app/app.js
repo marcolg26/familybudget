@@ -7,13 +7,15 @@ const port = 3002;
 const { MongoClient, ObjectId } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
 
+const client = new MongoClient(uri);
+
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(session({ secret: 'xx', resave: false })); //!!
 
 
 app.listen(port, () => {
-    console.log(`App listening on port ${port}`);
+    console.log(`App in funzione sulla porta ${port}`);
 });
 
 app.get("/", (req, res) => {
@@ -23,9 +25,10 @@ app.get("/", (req, res) => {
 app.use(express.static(`${__dirname}/pages`));
 
 app.post("/api/auth/signin", async (req, res) => {
-    const client = new MongoClient(uri);
+
     await client.connect();
     const database = client.db("familybudget");
+
     const user = await database.collection("users").findOne({ username: req.body.username });
 
     if (user) {
@@ -35,10 +38,14 @@ app.post("/api/auth/signin", async (req, res) => {
             //res.send("ok");
             res.redirect('/home.html');
         } else {
-            res.send("credenziali errate");
+            res.redirect('/signin.html?msg=err');
+            //res.send("credenziali errate");
         }
     }
-    else res.status(400).send("utente non esistente");
+    else{
+        res.redirect('/signin.html?msg=err');
+        //res.status(400).send("utente non esistente");
+    } 
 });
 
 app.post("/api/auth/signup", async (req, res) => {
@@ -61,14 +68,13 @@ function check(req, res, next) {
     if (req.session.user) {
         next();
     } else {
+        //res.redirect('/signin.html?msg=err');
         res.status(403).send("utente non autenticato");
     }
 }
 
-app.get('/api/users/', check, async (req, res) => { //in più (ma necessaria)
+app.get('/api/users/', check, async (req, res) => {
     console.log(`/api/users/`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     filter = {
@@ -87,8 +93,7 @@ app.get('/api/users/', check, async (req, res) => { //in più (ma necessaria)
 
 app.get('/api/budget/', check, async (req, res) => {
     console.log(`/api/budget/`);
-    const client = new MongoClient(uri);
-    await client.connect();
+
     const database = client.db("familybudget");
 
     const filter = {
@@ -118,8 +123,6 @@ app.get('/api/budget/', check, async (req, res) => {
 });
 
 app.get('/api/budget/whoami', check, async (req, res) => { //eliminare password
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
     console.log(`/api/users/search/:query`);
     console.log(req.params.query);
@@ -130,8 +133,6 @@ app.get('/api/budget/whoami', check, async (req, res) => { //eliminare password
 
 app.get('/api/budget/:year', check, async (req, res) => {
     console.log(`/api/budget/:year`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const year = req.params.year;
@@ -165,8 +166,6 @@ app.get('/api/budget/:year', check, async (req, res) => {
 
 app.get('/api/budget/:year/:month', check, async (req, res) => {
     console.log(`/api/budget/:year`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const year = req.params.year;
@@ -201,8 +200,6 @@ app.get('/api/budget/:year/:month', check, async (req, res) => {
 
 app.get('/api/budget_in/', check, async (req, res) => {
     console.log(`/api/budget_in/`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const filter = {
@@ -243,8 +240,6 @@ app.get('/api/budget/search/:query', check, async (req, res) => { //***
 
 app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
     console.log(`/api/budget/:year/:month/:id`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const filter = {
@@ -259,8 +254,6 @@ app.get('/api/budget/:year/:month/:id', check, async (req, res) => {
 
 app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
     console.log(`post /api/budget/`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const output = {
@@ -285,26 +278,12 @@ app.post('/api/budget/', check, async (req, res) => { //ho tolto /:year/:month
 
 app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
     console.log(`put /api/budget/`);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const filter = {
         '_id': new ObjectId(`${req.params.id}`)
     };
-    const projection = {
-        '$set': {
-            'user': req.session.username,
-            'category': req.body.category,
-            'description': req.body.description,
-            'price': parseFloat(req.body.price),
-            'otherUsers': Object.entries(req.body.otherUsers).map(([user, quote]) => ({
-                user: user,
-                quote: quote
-            }))
-        }
-    };
-
+    
     const result = await database.collection("expenses").updateOne(filter, { 
         '$set': {
             'user': req.session.username,
@@ -326,9 +305,8 @@ app.put('/api/budget/:year/:month/:id', check, async (req, res) => {
 app.delete('/api/budget/:id', check, async (req, res) => { //aggiungere year e month
     console.log(`del /api/budget/id`);
     console.log(req.params.id);
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
+
     database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
 
 
@@ -336,8 +314,7 @@ app.delete('/api/budget/:id', check, async (req, res) => { //aggiungere year e m
 
 app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto dare/avere utente loggato
     console.log(`/api/balance`);
-    const client = new MongoClient(uri);
-    await client.connect();
+
     const database = client.db("familybudget");
 
     const result = await database.collection("expenses").aggregate([ //quanto tutti gli altri utenti devono all'utente loggato
@@ -391,8 +368,6 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
 app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente loggato e utente con id id.
     console.log(`/api/balance/:id`);
 
-    const client = new MongoClient(uri);
-    await client.connect();
     const database = client.db("familybudget");
 
     const result = await database.collection("expenses").aggregate([ //quanto id deve all'utente loggato
@@ -458,9 +433,9 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
 
 
 app.get('/api/users/search/:query', check, async (req, res) => { //eliminare password dai risultati
-    const client = new MongoClient(uri);
-    await client.connect();
+
     const database = client.db("familybudget");
+
     console.log(`/api/users/search/:query`);
     console.log(req.params.query);
     const results = await database.collection("users").find({ "username": { "$regex": req.params.query, "$options": "i" } }).toArray();
