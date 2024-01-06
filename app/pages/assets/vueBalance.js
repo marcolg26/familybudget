@@ -6,6 +6,7 @@ const app5 = createApp({
             users: [],
             balance: [],
             form: {
+                date: new Date(),
                 category: 'Rimborso',
                 description: 'Quota',
                 price: 0,
@@ -20,6 +21,10 @@ const app5 = createApp({
     methods: {
         getTransactionsIN: async function () {
             const response = await fetch("api/budget_in");
+            if (response.status === 403) {
+                console.log("403 non autorizzato");
+                location.assign('signin.html?msg=err');
+            }
             this.transactions = await response.json();
         },
         getUsers: async function () {

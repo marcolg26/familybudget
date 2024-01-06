@@ -57,7 +57,7 @@ const app = createApp({
 
             this.form.id = record[0]._id;
 
-            this.form.date=new Date(record[0].date).toISOString().slice(0,10)
+            this.form.date = new Date(record[0].date).toISOString().slice(0, 10)
 
             this.form.category = record[0].category;
             this.form.description = record[0].description;
@@ -120,14 +120,17 @@ const app = createApp({
             this.form.description = "";
             this.form.price = "";
 
-            this.form.otherUsers={};
-            this.form.otherUsersCheck={};
+            this.form.otherUsers = {};
+            this.form.otherUsersCheck = {};
         },
         getBalance: async function () {
             const response = await fetch("/api/balance");
+            if (response.status === 403) {
+                console.log("403 non autorizzato");
+                location.assign('signin.html?msg=err');
+            }
             this.situation = await response.json();
             this.balance = this.situation[0].diff.totalQuote;
-            console.log(this.balance)
         }
     },
     mounted() {
