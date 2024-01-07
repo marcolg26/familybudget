@@ -383,7 +383,6 @@ app.delete('/api/budget/:year/:month/:id', check, async (req, res) => {
     const database = client.db("familybudget");
 
     const result = database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
-
     const deleted = (await result).deletedCount;
 
     if (deleted === 1) {
@@ -399,7 +398,7 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
 
     const database = client.db("familybudget");
 
-    const result = await database.collection("expenses").aggregate([ //quanto tutti gli altri utenti devono all'utente loggato
+    const crediti = await database.collection("expenses").aggregate([ //quanto tutti gli altri utenti devono all'utente loggato
         {
             $unwind: "$otherUsers"
         },
@@ -416,7 +415,7 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         }
     ]).toArray();
 
-    const result2 = await database.collection("expenses").aggregate([ //quanto id loggato deve a tutti gli altri
+    const debiti = await database.collection("expenses").aggregate([ //quanto id loggato deve a tutti gli altri
         {
             $unwind: "$otherUsers"
         },
@@ -433,27 +432,26 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         }
     ]).toArray();
 
-    if (result[0]?.totalQuote);
+    if (crediti[0]?.totalQuote);
     else {
-        result[0] = [];
-        result[0].totalQuote = 0;
+        crediti[0] = [];
+        crediti[0].totalQuote = 0;
     }
 
-    if (result2[0]?.totalQuote);
+    if (debiti[0]?.totalQuote);
     else {
-        result2[0] = [];
-        result2[0].totalQuote = 0;
+        debiti[0] = [];
+        debiti[0].totalQuote = 0;
     }
 
     const output = [{
-        "have": result,
-        "give": result2,
+        "have": crediti,
+        "give": debiti,
         "diff": {
             _id: null,
-            totalQuote: parseFloat(result2[0].totalQuote) + parseFloat(-result[0].totalQuote)
+            totalQuote: parseFloat(debiti[0].totalQuote) + parseFloat(-crediti[0].totalQuote)
         }
-    }
-    ]
+    }]
 
     res.json(output);
 
@@ -463,7 +461,7 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
 
     const database = client.db("familybudget");
 
-    const result = await database.collection("expenses").aggregate([ //quanto id deve all'utente loggato
+    const credito = await database.collection("expenses").aggregate([ //quanto id deve all'utente loggato
         {
             '$unwind': '$otherUsers'
         },
@@ -483,7 +481,7 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         }
     ]).toArray();
 
-    const result2 = await database.collection("expenses").aggregate([ //quanto utente loggato deve a id
+    const debito = await database.collection("expenses").aggregate([ //quanto utente loggato deve a id
         {
             '$unwind': '$otherUsers'
         }, {
@@ -501,23 +499,23 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         }
     ]).toArray();
 
-    if (result[0]?.totalQuote);
+    if (credito[0]?.totalQuote);
     else {
-        result[0] = [];
-        result[0].totalQuote = 0;
+        credito[0] = [];
+        credito[0].totalQuote = 0;
     }
 
-    if (result2[0]?.totalQuote);
+    if (debito[0]?.totalQuote);
     else {
-        result2[0] = [];
-        result2[0].totalQuote = 0;
+        debito[0] = [];
+        debito[0].totalQuote = 0;
     }
 
 
     const output = {
-        "toHave": parseFloat(-result[0].totalQuote),
-        "toGive": parseFloat(result2[0].totalQuote),
-        "balance": parseFloat(result2[0].totalQuote) + parseFloat(-result[0].totalQuote)
+        "toHave": parseFloat(-credito[0].totalQuote),
+        "toGive": parseFloat(debito[0].totalQuote),
+        "balance": parseFloat(debito[0].totalQuote) + parseFloat(-credito[0].totalQuote)
     }
 
     res.json(output); //ok, ma rivedere formato json

@@ -33,7 +33,6 @@ const app = createApp({
                 else url = "/api/budget/" + this.year + "/" + this.month;
             }
 
-            console.log(url);
             const response = await fetch(url);
             this.transactions = await response.json();
         },
@@ -83,7 +82,6 @@ const app = createApp({
                 this.form.otherUsersCheck[element.user] = 1;
             });
 
-            console.log(this.form);
         },
         del: async function (id) {
 
@@ -108,11 +106,11 @@ const app = createApp({
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.form)
             };
-            const response = fetch(url, requestOptions).then(this.getTransactions()).then(this.getBalance()).then(this.getUsers());
-            this.getTransactions(); //a quanto pare è necessario...
+            const response = fetch(url, requestOptions);
+            console.log((await response).json());
+            this.getTransactions(); //x
             this.getBalance();
             this.getUsers();
-            console.log((await response).json());
         },
         datefilter() {
             this.getTransactions();
