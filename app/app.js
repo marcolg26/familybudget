@@ -28,56 +28,84 @@ app.get("/demo", async (req, res) => {
     const database = client.db("familybudget");
 
     const userDocument = {
-        "username": "pippo",
-        "name": "Pippo",
-        "surname": "",
-        "password": "pippo"
+        "username": "marco",
+        "name": "Marco",
+        "surname": "Lo Giudice",
+        "password": "1234"
     };
 
-    database.collection('users').insertOne(userDocument);
+    let count = await database.collection('users').countDocuments(userDocument);
+
+    if (count == 0) {
+        database.collection('users').insertOne(userDocument);
+    }
 
     const userDocument2 = {
-        "username": "pluto",
-        "name": "pluto",
-        "surname": "",
-        "password": ""
+        "username": "pier",
+        "name": "Pierpaolo",
+        "surname": "Lo Giudice",
+        "password": "1234"
     };
 
-    database.collection('users').insertOne(userDocument2);
+    count = await database.collection('users').countDocuments(userDocument2);
+
+ 
+
+    if (count == 0) {
+        database.collection('users').insertOne(userDocument2);
+    }
 
     const demo = {
-        user: "pippo",
+        user: "marco",
         category: "Cibo",
         date: new Date(),
         description: "Pizza",
         price: 10.25,
         otherUsers: [
             {
-                user: "pluto",
+                user: "marco",
                 quote: 6
+            },
+            {
+                user: "pier",
+                quote: 4.25
             }
         ]
     };
 
-    database.collection('expenses').insertOne(demo);
+    count = await database.collection('expenses').countDocuments(demo);
+
+    console.log(count); 
+
+    if (count == 0) {
+        database.collection('expenses').insertOne(demo);
+    }
 
     const demo2 = {
-        user: "pluto",
+        user: "pier",
         category: "Svago",
         date: new Date(),
-        description: "Ciema",
+        description: "Cinema",
         price: 20,
         otherUsers: [
             {
-                user: "pippo",
+                user: "pier",
+                quote: 10
+            },
+            {
+                user: "marco",
                 quote: 10
             }
         ]
     };
 
-    database.collection('expenses').insertOne(demo2);
+    count = await database.collection('expenses').countDocuments(demo2);
 
-    res.redirect('/signin.html');
+    if (count == 0) {
+        database.collection('expenses').insertOne(demo2);
+    }
+
+    res.redirect('/signin.html?action=demo');
 });
 
 app.use(express.static(`${__dirname}/pages`));
@@ -107,7 +135,7 @@ app.post("/api/auth/signin", async (req, res) => {
 });
 
 app.post("/api/auth/signup", async (req, res) => {
-    
+
     const client = new MongoClient(uri);
     await client.connect();
     const database = client.db("familybudget");
@@ -288,6 +316,9 @@ app.get('/api/budget_in/', check, async (req, res) => {
     const database = client.db("familybudget");
 
     const filter = {
+        'user': {
+            '$ne': req.session.username
+        },
         'otherUsers.user': req.session.username
     };
     const projection = {
@@ -382,7 +413,7 @@ app.delete('/api/budget/:year/:month/:id', check, async (req, res) => {
 
     const database = client.db("familybudget");
 
-    const result = database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) }); //*** 01/01 + #7
+    const result = database.collection("expenses").deleteOne({ "_id": new ObjectId(`${req.params.id}`) });
     const deleted = (await result).deletedCount;
 
     if (deleted === 1) {
@@ -404,7 +435,10 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         },
         {
             '$match': {
-                'user': req.session.username
+                'user': req.session.username,
+                'otherUsers.quote': {
+                    '$gt': 0
+                }
             }
         },
         {
@@ -421,7 +455,51 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         },
         {
             '$match': {
-                'otherUsers.user': req.session.username
+                'otherUsers.user': req.session.username,
+                'otherUsers.quote': {
+                    '$gt': 0
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalQuote: { $sum: "$otherUsers.quote" }
+            }
+        }
+    ]).toArray();
+
+    const rimborsiIN = await database.collection("expenses").aggregate([ //quanto sono stato rimborsato
+        {
+            $unwind: "$otherUsers"
+        },
+        {
+            '$match': {
+                'otherUsers.user': req.session.username,
+                'otherUsers.quote': {
+                    '$lt': 0
+                }
+            }
+        },
+        {
+            $group: {
+                _id: null,
+                totalQuote: { $sum: "$otherUsers.quote" }
+            }
+        }
+    ]).toArray();
+
+
+    const rimborsiOUT = await database.collection("expenses").aggregate([ //quanto ho rimborsato
+        {
+            $unwind: "$otherUsers"
+        },
+        {
+            '$match': {
+                'user': req.session.username,
+                'otherUsers.quote': {
+                    '$lt': 0
+                }
             }
         },
         {
@@ -444,12 +522,26 @@ app.get('/api/balance', check, async (req, res) => { //visualizzazione riassunto
         debiti[0].totalQuote = 0;
     }
 
+    if (rimborsiIN[0]?.totalQuote);
+    else {
+        rimborsiIN[0] = [];
+        rimborsiIN[0].totalQuote = 0;
+    }
+
+    if (rimborsiOUT[0]?.totalQuote);
+    else {
+        rimborsiOUT[0] = [];
+        rimborsiOUT[0].totalQuote = 0;
+    }
+
     const output = [{
         "have": crediti,
         "give": debiti,
+        "refundIn": rimborsiIN,
+        "refundOut": rimborsiOUT,
         "diff": {
             _id: null,
-            totalQuote: parseFloat(debiti[0].totalQuote) + parseFloat(-crediti[0].totalQuote)
+            totalQuote: parseFloat(debiti[0].totalQuote) + parseFloat(-crediti[0].totalQuote) + parseFloat(-rimborsiIN[0].totalQuote) + parseFloat(rimborsiOUT[0].totalQuote)
         }
     }]
 
@@ -468,7 +560,10 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         {
             '$match': {
                 'user': req.session.username,
-                'otherUsers.user': req.params.id
+                'otherUsers.user': req.params.id,
+                'otherUsers.quote': {
+                    '$gt': 0
+                }
             }
         },
         {
@@ -487,7 +582,54 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         }, {
             '$match': {
                 'user': req.params.id,
-                'otherUsers.user': req.session.username
+                'otherUsers.user': req.session.username,
+                'otherUsers.quote': {
+                    '$gt': 0
+                }
+            }
+        }, {
+            '$group': {
+                '_id': null,
+                'totalQuote': {
+                    '$sum': '$otherUsers.quote'
+                }
+            }
+        }
+    ]).toArray();
+
+    const rimborsiOUT = await database.collection("expenses").aggregate([ //quanto utente loggato ha rimborsato id
+        {
+            '$unwind': '$otherUsers'
+        },
+        {
+            '$match': {
+                'user': req.session.username,
+                'otherUsers.user': req.params.id,
+                'otherUsers.quote': {
+                    '$lt': 0
+                }
+            }
+        },
+        {
+            '$group': {
+                '_id': null,
+                'totalQuote': {
+                    '$sum': '$otherUsers.quote'
+                }
+            }
+        }
+    ]).toArray();
+
+    const rimborsiIN = await database.collection("expenses").aggregate([ //
+        {
+            '$unwind': '$otherUsers'
+        }, {
+            '$match': {
+                'user': req.params.id,
+                'otherUsers.user': req.session.username,
+                'otherUsers.quote': {
+                    '$lt': 0
+                }
             }
         }, {
             '$group': {
@@ -511,14 +653,28 @@ app.get('/api/balance/:id', check, async (req, res) => { //bilancio tra utente l
         debito[0].totalQuote = 0;
     }
 
+    if (rimborsiOUT[0]?.totalQuote);
+    else {
+        rimborsiOUT[0] = [];
+        rimborsiOUT[0].totalQuote = 0;
+    }
+
+    if (rimborsiIN[0]?.totalQuote);
+    else {
+        rimborsiIN[0] = [];
+        rimborsiIN[0].totalQuote = 0;
+    }
+
 
     const output = {
         "toHave": parseFloat(-credito[0].totalQuote),
         "toGive": parseFloat(debito[0].totalQuote),
-        "balance": parseFloat(debito[0].totalQuote) + parseFloat(-credito[0].totalQuote)
+        "refundIN": parseFloat(rimborsiIN[0].totalQuote),
+        "refundOUT": parseFloat(rimborsiOUT[0].totalQuote),
+        "balance": parseFloat(debito[0].totalQuote) + parseFloat(-credito[0].totalQuote) + parseFloat(-rimborsiIN[0].totalQuote) + parseFloat(rimborsiOUT[0].totalQuote)
     }
 
-    res.json(output); //ok, ma rivedere formato json
+    res.json(output);
 
 });
 

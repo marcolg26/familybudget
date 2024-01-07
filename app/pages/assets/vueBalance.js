@@ -7,13 +7,14 @@ const app5 = createApp({
             balance: [],
             form: {
                 date: new Date(),
-                category: 'Rimborso',
-                description: 'Quota',
+                category: 'Rimborsi',
+                description: 'Rimborso',
                 price: 0,
                 otherUsers: {
                 }
 
             },
+            currentUser: '',
             user: '',
             price: '',
         };
@@ -42,13 +43,19 @@ const app5 = createApp({
             console.log(this.balance);
 
         },
+        getUser: async function () {
+            const response = await fetch("/api/budget/whoami");
+            record = await response.json();
+            this.currentUser = record[0];
+        },
         apriRimborso(user, price) {
 
             this.user = user;
             this.price = price;
 
             this.form.price = 0;
-            this.form.otherUsers[user] = price;
+            this.form.otherUsers[this.currentUser.username] = price;
+            this.form.otherUsers[user] = parseFloat(-price);
 
         },
         post: async function () {
@@ -69,5 +76,6 @@ const app5 = createApp({
     mounted() {
         this.getTransactionsIN();
         this.getUsers();
+        this.getUser();
     },
 }).mount("#app5");

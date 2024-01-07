@@ -57,7 +57,7 @@
   <main class="flex-shrink-0">
     <div class="container" id="app">
       <h1 class="mt-5">Benvenuto, {{user.name}}</h1>
-      <h2>Situazione attuale: <span :style="{color: balance > 0 ? 'red' : 'green'}">{{balance}}€</span></h2>
+      <h2>Bilancio attuale: <span :style="{color: balance > 0 ? 'red' : 'green'}">{{balance}}€</span></h2>
       <p>
         <a class="btn btn-secondary" role="button" href="balance.html">Rimborsi&nbsp;<span class="badge bg-danger"
             v-if="debts>0">{{debts}}</span></a> &nbsp;
@@ -65,7 +65,7 @@
           data-bs-whatever="@mdo" @click="clean()">Nuova spesa</button>
       </p>
       <h2>Ultime spese</h2>
-      <p class="lead">In questa sezione sono presenti tutte le spese effettuate con costo totale e eventuali quote di
+      <p class="lead">In questa sezione sono presenti tutte le spese effettuate con le eventuali quote di
         altri utenti</p>
 
       <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse"
@@ -123,7 +123,7 @@
             <th>Descrizione</th>
             <th>Categoria</th>
             <th>Quote</th>
-            <th>Costo</th>
+            <th>Totale</th>
             <th></th>
             <th></th>
           </tr>
@@ -175,12 +175,19 @@
                   <input type="text" v-model="form.category" class="form-control" name="category" id="category">
                 </div>
                 <div class="mb-3">
-                  <label for="recipient-name" class="col-form-label">Costo:</label>
-                  <input type="number" v-model="form.price" class="form-control" step=".01" name="price" id="price">
+                  <label for="recipient-name" class="col-form-label">Totale:</label>
+                  <input type="number" v-model="form.price" class="form-control" min="0" step=".01" name="price" id="price">
                   <div class="invalid-feedback">Inserire un costo</div>
                 </div>
                 <div class="mb-3">
                   <label for="recipient-name" class="col-form-label">Utenti:</label>
+                  <div class="input-group mb-3">
+                  <div class="input-group-text" style="width: 25%;">
+                    <input class="form-check-input mt-0" type="checkbox" checked disabled
+                      >&nbsp;(tu)
+                  </div>
+                  <input type="number" class="form-control" aria-label="" v-model="form.otherUsers[user.username]">
+                  </div>
                   <div class="input-group mb-3" v-for="user,k in users" :key="k"> <!-- FOR -->
                     <div class="input-group-text" style="width: 25%;">
                       <input class="form-check-input mt-0" type="checkbox" @click="toggleUserInExpense(user.username)"
@@ -194,6 +201,7 @@
               </form>
             </div>
             <div class="modal-footer">
+              <!-- <code>{{form}}</code> -->
               <button class="btn btn-primary" data-bs-dismiss="modal" @click="put(form.id)"
                 v-if="nuovo==0">Modifica</button>
               <button class="btn btn-primary" data-bs-dismiss="modal" @click="post()" v-if="nuovo==1">Inserisci</button>
@@ -210,8 +218,6 @@
       <span class="text-body-secondary">&copy; 2024 familybudget - Marco Lo Giudice</span>
     </div>
   </footer>
-
-
 
   <script>
     $(document).ready(function () {
