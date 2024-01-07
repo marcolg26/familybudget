@@ -12,7 +12,7 @@ const client = new MongoClient(uri);
 
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(session({ secret: 'xx', resave: false })); //!!
+app.use(session({ secret: 'xx', resave: false }));
 
 app.listen(port, () => {
     console.log(`App in funzione sulla porta ${port}`);
@@ -105,7 +105,7 @@ app.get("/demo", async (req, res) => {
         database.collection('expenses').insertOne(demo2);
     }
 
-    res.redirect('/signin.html?action=demo');
+    res.redirect('/signin.html?msg=2');
 });
 
 app.use(express.static(`${__dirname}/pages`));
@@ -124,13 +124,11 @@ app.post("/api/auth/signin", async (req, res) => {
             //res.send("ok");
             res.redirect('/home.html');
         } else {
-            res.redirect('/signin.html?msg=err');
-            //res.send("credenziali errate");
+            res.redirect('/signin.html?msg=1');
         }
     }
     else {
-        res.redirect('/signin.html?msg=err');
-        //res.status(400).send("utente non esistente");
+        res.redirect('/signin.html?msg=1');
     }
 });
 
@@ -148,9 +146,7 @@ app.post("/api/auth/signup", async (req, res) => {
     };
     await database.collection("users").insertOne(user);
 
-    //res.json(user);
-
-    res.redirect('/signin.html');
+    res.redirect('/signin.html?msg=4');
 
 });
 
@@ -159,7 +155,6 @@ function check(req, res, next) {
     if (req.session.user) {
         next();
     } else {
-        //res.redirect('/signin.html?msg=err');
         res.status(403).send("utente non autenticato");
     }
 }
@@ -167,7 +162,7 @@ function check(req, res, next) {
 app.get('/api/auth/logout', check, async (req, res) => {
 
     delete req.session.user;
-    res.redirect('/signin.html');
+    res.redirect('/signin.html?msg=3');
 
 });
 

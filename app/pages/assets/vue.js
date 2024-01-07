@@ -155,7 +155,7 @@ const app = createApp({
             const response = await fetch("/api/balance");
             if (response.status === 403) {
                 console.log("403 non autorizzato");
-                location.assign('signin.html?msg=err');
+                location.assign('signin.html?msg=5');
             }
             this.situation = await response.json();
             this.balance = this.situation[0].diff.totalQuote;

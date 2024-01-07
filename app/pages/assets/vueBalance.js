@@ -24,7 +24,7 @@ const app5 = createApp({
             const response = await fetch("api/budget_in");
             if (response.status === 403) {
                 console.log("403 non autorizzato");
-                location.assign('signin.html?msg=auth');
+                location.assign('signin.html?msg=5');
             }
             this.transactions = await response.json();
         },
